@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Trigger {
+  id               String    @id @default(cuid())
+  name             String
+  description      String    @default("")
+  hubspotEventType String
+  hubspotProperty  String?
+  hubspotValue     String?
+  templateName     String
+  variableMapping  String    @default("{}")
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  messages         Message[]
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  contactPhone     String
+  contactName      String?
+  direction        String
+  templateName     String?
+  body             String
+  status           String   @default("sent")
+  failReason       String?
+  hubspotContactId String?
+  triggerId        String?
+  trigger          Trigger? @relation(fields: [triggerId], references: [id])
+  waMessageId      String?  @unique
+  classifyTipo     String?
+  classifyTom      String?
+  classifyPontos   String?
+  classifyProximo  String?
+  timestamp        DateTime @default(now())
+
+  @@index([contactPhone, timestamp])
+  @@index([timestamp])
+  @@index([waMessageId])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model Template {
+  id             String   @id @default(cuid())
+  metaTemplateId String   @unique
+  name           String
+  language       String
+  status         String
+  category       String
+  bodyText       String
+  variables      String   @default("[]")
+  lastSyncedAt   DateTime @default(now())
+}
