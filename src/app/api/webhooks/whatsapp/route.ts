@@ -6,7 +6,7 @@ import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { classifyConversation } from '@/lib/classify'
 
 export async function GET(req: NextRequest) {
-  const challenge = verifyWebhook(req.nextUrl.searchParams)
+  const challenge = await verifyWebhook(req.nextUrl.searchParams)
   if (challenge) {
     return new NextResponse(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } })
   }
