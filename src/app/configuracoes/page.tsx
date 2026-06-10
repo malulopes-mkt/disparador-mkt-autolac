@@ -39,10 +39,10 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'Senha do Painel',
-    description: 'Altere a senha de acesso ao painel.',
+    title: 'Meta App Secret',
+    description: 'Chave secreta do app Meta para validacao HMAC dos webhooks.',
     fields: [
-      { key: 'APP_PASSWORD', label: 'Nova senha', placeholder: 'Digite a nova senha', type: 'password', help: 'Sera aplicada no proximo login' },
+      { key: 'META_APP_SECRET', label: 'App Secret', placeholder: 'Cole o App Secret do Meta', type: 'password', help: 'Encontre em developers.facebook.com > App > Configuracoes > Basico' },
     ],
   },
 ]

@@ -1,4 +1,5 @@
 import { getSetting } from './settings'
+import crypto from 'crypto'
 
 const GRAPH_URL = 'https://graph.facebook.com/v21.0'
 
@@ -74,14 +75,14 @@ export async function syncTemplatesFromMeta(): Promise<MetaTemplate[]> {
   let url: string | null = `${GRAPH_URL}/${wabaId}/message_templates?limit=100`
 
   while (url) {
-    const res = await fetch(url, {
+    const res: Response = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       throw new Error(`Meta API error ${res.status}: ${JSON.stringify(err)}`)
     }
-    const data = await res.json()
+    const data: { data?: MetaTemplate[]; paging?: { next?: string } } = await res.json()
     templates.push(...(data.data || []))
     url = data.paging?.next || null
   }
@@ -105,10 +106,37 @@ export async function verifyWebhook(params: URLSearchParams): Promise<string | n
   const token = params.get('hub.verify_token')
   const challenge = params.get('hub.challenge')
 
-  if (mode === 'subscribe' && token === verifyToken && challenge) {
-    return challenge
+  if (mode === 'subscribe' && challenge && token && verifyToken) {
+    // Bloqueante #6: timingSafeEqual em vez de === para evitar timing attack
+    const tokenBuf = Buffer.from(token)
+    const verifyBuf = Buffer.from(verifyToken)
+    if (tokenBuf.length === verifyBuf.length && crypto.timingSafeEqual(tokenBuf, verifyBuf)) {
+      return challenge
+    }
   }
   return null
+}
+
+// Bloqueante #1: Validação HMAC X-Hub-Signature-256 do webhook POST
+export async function verifyWebhookSignature(rawBody: string, signatureHeader: string | null): Promise<boolean> {
+  if (!signatureHeader) return false
+
+  const appSecret = await getSetting('META_APP_SECRET')
+  if (!appSecret) {
+    console.error('META_APP_SECRET not configured — cannot verify webhook signature')
+    return false
+  }
+
+  const expectedSignature = 'sha256=' + crypto
+    .createHmac('sha256', appSecret)
+    .update(rawBody, 'utf-8')
+    .digest('hex')
+
+  const expectedBuf = Buffer.from(expectedSignature)
+  const receivedBuf = Buffer.from(signatureHeader)
+
+  if (expectedBuf.length !== receivedBuf.length) return false
+  return crypto.timingSafeEqual(expectedBuf, receivedBuf)
 }
 
 export interface IncomingMessage {

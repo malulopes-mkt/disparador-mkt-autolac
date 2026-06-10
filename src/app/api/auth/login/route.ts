@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { setSessionCookie } from '@/lib/auth'
+import { NextResponse } from 'next/server'
 
-export async function POST(req: NextRequest) {
-  const { password } = await req.json()
-  if (password !== process.env.APP_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  await setSessionCookie()
-  return NextResponse.json({ ok: true })
+// Login agora e gerenciado pelo SSO Microsoft Entra via OAuth2-Proxy.
+// Esta rota existe apenas para compatibilidade — redireciona para o app.
+export async function POST() {
+  return NextResponse.json({ ok: true, message: 'SSO managed by OAuth2-Proxy' })
+}
+
+export async function GET() {
+  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'))
 }

@@ -1,57 +1,32 @@
-import { cookies } from 'next/headers'
+import { headers } from 'next/headers'
 import { NextRequest } from 'next/server'
-import crypto from 'crypto'
 
-const TOKEN_NAME = 'whatsapp-mkt-session'
+/**
+ * SSO Microsoft Entra via OAuth2-Proxy.
+ * O proxy injeta X-Auth-Request-Email em todo request autenticado.
+ * Em dev local, o middleware.ts faz fallback para DEV_USER_EMAIL.
+ */
 
-function sign(value: string): string {
-  const secret = process.env.APP_SECRET || 'default-secret-change-me'
-  return crypto.createHmac('sha256', secret).update(value).digest('hex')
-}
-
-export function createSessionToken(): string {
-  const payload = `authenticated:${Date.now()}`
-  const signature = sign(payload)
-  return `${payload}.${signature}`
-}
-
-export function validateToken(token: string): boolean {
-  const lastDot = token.lastIndexOf('.')
-  if (lastDot === -1) return false
-  const payload = token.substring(0, lastDot)
-  const signature = token.substring(lastDot + 1)
-  return crypto.timingSafeEqual(
-    Buffer.from(sign(payload)),
-    Buffer.from(signature)
-  )
+export async function getAuthenticatedEmail(): Promise<string | null> {
+  const headerStore = await headers()
+  // Header original do proxy OU header propagado pelo middleware
+  return headerStore.get('x-auth-request-email')
+    || headerStore.get('x-user-email')
+    || null
 }
 
 export async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(TOKEN_NAME)?.value
-  if (!token) return false
-  return validateToken(token)
+  const email = await getAuthenticatedEmail()
+  return !!email
 }
 
-export function isAuthenticatedFromRequest(req: NextRequest): boolean {
-  const token = req.cookies.get(TOKEN_NAME)?.value
-  if (!token) return false
-  return validateToken(token)
+export function getEmailFromRequest(req: NextRequest): string | null {
+  return req.headers.get('x-auth-request-email')
+    || req.headers.get('x-user-email')
+    || null
 }
 
-export async function setSessionCookie(): Promise<void> {
-  const cookieStore = await cookies()
-  const token = createSessionToken()
-  cookieStore.set(TOKEN_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    path: '/',
-  })
-}
-
-export async function clearSessionCookie(): Promise<void> {
-  const cookieStore = await cookies()
-  cookieStore.delete(TOKEN_NAME)
+// Logout redireciona para o OAuth2-Proxy sign_out
+export function getSSOLogoutUrl(): string {
+  return 'https://oauth.apps.wmi.solutions/oauth2/sign_out'
 }

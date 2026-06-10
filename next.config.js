@@ -3,9 +3,9 @@ const nextConfig = {
   output: 'standalone',
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client'],
-  },
-  typescript: {
-    ignoreBuildErrors: true,
+    serverActions: {
+      bodySizeLimit: '1mb',
+    },
   },
 }
 

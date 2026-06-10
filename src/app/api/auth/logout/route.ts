@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
-import { clearSessionCookie } from '@/lib/auth'
+import { getSSOLogoutUrl } from '@/lib/auth'
 
+// Logout redireciona para o OAuth2-Proxy sign_out
+// Isso remove o cookie SSO e forca novo login Microsoft
 export async function POST() {
-  await clearSessionCookie()
-  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'))
+  return NextResponse.redirect(getSSOLogoutUrl())
+}
+
+export async function GET() {
+  return NextResponse.redirect(getSSOLogoutUrl())
 }
