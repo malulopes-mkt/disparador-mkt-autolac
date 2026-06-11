@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Paths publicos exatos (match exato, nao prefixo)
-const PUBLIC_PATHS_EXACT = ['/api/webhooks/whatsapp', '/api/health']
+const PUBLIC_PATHS_EXACT = ['/api/webhooks/whatsapp', '/api/webhooks/hubspot', '/api/health']
 // Paths publicos por prefixo (assets, static files)
 const PUBLIC_PATHS_PREFIX = ['/_next/', '/favicon.ico']
 
