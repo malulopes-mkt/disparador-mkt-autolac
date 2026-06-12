@@ -48,7 +48,7 @@ export async function GET() {
     results.wabaCheck = { error: String(err) }
   }
 
-  // Test 4: Try sending a test template (dry check - just check if endpoint responds)
+  // Test 4: List templates
   try {
     const templateRes = await fetch(`https://graph.facebook.com/v21.0/${wabaId}/message_templates?limit=1`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -57,6 +57,41 @@ export async function GET() {
     results.templateListCheck = { status: templateRes.status, data: templateData }
   } catch (err) {
     results.templateListCheck = { error: String(err) }
+  }
+
+  // Test 5: Check token permissions (debug_token endpoint)
+  try {
+    const appId = '1692232541924521'
+    const debugRes = await fetch(`https://graph.facebook.com/v21.0/debug_token?input_token=${token}&access_token=${token}`)
+    const debugData = await debugRes.json()
+    results.tokenPermissions = { status: debugRes.status, data: debugData }
+  } catch (err) {
+    results.tokenPermissions = { error: String(err) }
+  }
+
+  // Test 6: Try actual message send to see exact error
+  try {
+    const sendBody = {
+      messaging_product: 'whatsapp',
+      to: '5537991084433',
+      type: 'template',
+      template: {
+        name: 'boas_vindas',
+        language: { code: 'pt_BR' },
+      },
+    }
+    const sendRes = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sendBody),
+    })
+    const sendData = await sendRes.json()
+    results.sendTest = { status: sendRes.status, data: sendData }
+  } catch (err) {
+    results.sendTest = { error: String(err) }
   }
 
   return NextResponse.json(results, { status: 200 })
