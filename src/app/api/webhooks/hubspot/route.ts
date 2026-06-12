@@ -1,13 +1,94 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { prisma } from '@/lib/db'
 import { sendTemplate, TemplateComponent } from '@/lib/whatsapp'
 import { findOrCreateContact, createCommunicationNote, getContactDeals, getContactById } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
+import { getSetting } from '@/lib/settings'
+
+const MAX_BODY_SIZE = 1_000_000
+const MAX_TIMESTAMP_AGE_MS = 5 * 60 * 1000
+
+function timingSafeCompare(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a)
+  const bBuf = Buffer.from(b)
+  if (aBuf.length !== bBuf.length) return false
+  return crypto.timingSafeEqual(aBuf, bBuf)
+}
+
+async function verifyHubSpotSignatureV3(
+  rawBody: string,
+  req: NextRequest
+): Promise<boolean> {
+  const signatureHeader = req.headers.get('x-hubspot-signature-v3')
+  const timestampHeader = req.headers.get('x-hubspot-request-timestamp')
+  if (!signatureHeader || !timestampHeader) return false
+
+  const timestamp = Number(timestampHeader)
+  if (isNaN(timestamp) || Date.now() - timestamp > MAX_TIMESTAMP_AGE_MS) return false
+
+  const clientSecret = await getSetting('HUBSPOT_CLIENT_SECRET')
+  if (!clientSecret) {
+    console.error('HUBSPOT_CLIENT_SECRET not configured')
+    return false
+  }
+
+  const protocol = req.headers.get('x-forwarded-proto') || 'https'
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || ''
+  const path = req.nextUrl.pathname + req.nextUrl.search
+  const requestUri = `${protocol}://${host}${path}`
+
+  const sourceString = req.method + requestUri + rawBody + timestampHeader
+  const expectedSignature = crypto
+    .createHmac('sha256', clientSecret)
+    .update(sourceString, 'utf-8')
+    .digest('base64')
+
+  return timingSafeCompare(expectedSignature, signatureHeader)
+}
+
+async function verifyN8NToken(req: NextRequest): Promise<boolean> {
+  const tokenHeader = req.headers.get('x-webhook-token')
+  if (!tokenHeader) return false
+
+  const expectedToken = await getSetting('N8N_WEBHOOK_TOKEN')
+  if (!expectedToken) {
+    console.error('N8N_WEBHOOK_TOKEN not configured')
+    return false
+  }
+
+  return timingSafeCompare(expectedToken, tokenHeader)
+}
 
 export async function POST(req: NextRequest) {
+  const contentLength = Number(req.headers.get('content-length') || 0)
+  if (contentLength > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+  }
+
+  const rawBody = await req.text()
+  if (rawBody.length > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+  }
+
+  const hasHubSpotHeaders = req.headers.has('x-hubspot-signature-v3')
+  const hasN8NHeader = req.headers.has('x-webhook-token')
+
+  let authenticated = false
+  if (hasHubSpotHeaders) {
+    authenticated = await verifyHubSpotSignatureV3(rawBody, req)
+  } else if (hasN8NHeader) {
+    authenticated = await verifyN8NToken(req)
+  }
+
+  if (!authenticated) {
+    console.error('Webhook auth failed — missing or invalid credentials')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const body = await req.json()
+    const body = JSON.parse(rawBody)
 
     // --- Extract fields from HubSpot workflow payload ---
     const phone = body.phone || body.hs_calculated_phone_number || body.mobilephone || ''
@@ -56,7 +137,6 @@ export async function POST(req: NextRequest) {
     let mode: 'direct' | 'trigger' = 'direct'
 
     if (directTemplateName) {
-      // MODE 1: Direct — HubSpot workflow sends templateName in body
       templateName = directTemplateName
       const dbTemplate = await prisma.template.findFirst({
         where: { name: directTemplateName, status: 'APPROVED' },
@@ -65,7 +145,6 @@ export async function POST(req: NextRequest) {
       templateLanguage = dbTemplate?.language || directLanguage
       mode = 'direct'
 
-      // Build variables from body if provided
       if (body.variables && typeof body.variables === 'object') {
         const parameters = Object.entries(body.variables as Record<string, string>)
           .sort(([a], [b]) => Number(a) - Number(b))
@@ -75,7 +154,6 @@ export async function POST(req: NextRequest) {
         }
       }
     } else {
-      // MODE 2: Trigger — match by event type + property
       const triggers = await prisma.trigger.findMany({
         where: { active: true, hubspotEventType: eventType },
       })
@@ -189,6 +267,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     console.error('HubSpot webhook error:', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 200 })
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
