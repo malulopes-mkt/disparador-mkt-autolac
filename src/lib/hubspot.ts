@@ -133,6 +133,17 @@ export async function findOrCreateContact(phone: string): Promise<HubSpotContact
   return createPlaceholderContact(phone)
 }
 
+export async function getContactById(contactId: string): Promise<HubSpotContact | null> {
+  const props = ['firstname', 'lastname', 'phone', 'mobilephone', 'hs_whatsapp_phone_number', 'email'].join(',')
+  const res = await fetch(
+    `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}?properties=${props}`,
+    { headers: await headers() }
+  )
+  if (!res.ok) return null
+  const data = await res.json()
+  return { id: data.id, properties: data.properties }
+}
+
 export async function getContactDeals(contactId: string): Promise<string | null> {
   const res = await fetch(
     `${HUBSPOT_API}/crm/v4/objects/contacts/${contactId}/associations/deals`,

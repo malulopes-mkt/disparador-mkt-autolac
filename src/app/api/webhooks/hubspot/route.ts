@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { sendTemplate, TemplateComponent } from '@/lib/whatsapp'
-import { findOrCreateContact, createCommunicationNote, getContactDeals } from '@/lib/hubspot'
+import { findOrCreateContact, createCommunicationNote, getContactDeals, getContactById } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 
 export async function POST(req: NextRequest) {
@@ -23,11 +23,24 @@ export async function POST(req: NextRequest) {
     const propertyName = body.propertyName || body.property_name || ''
     const propertyValue = body.propertyValue || body.property_value || ''
 
-    if (!phone) {
-      return NextResponse.json({ error: 'No phone provided' }, { status: 400 })
+    let resolvedPhone = phone
+    let resolvedName = contactName
+
+    if (!resolvedPhone && hubspotContactId) {
+      const contact = await getContactById(hubspotContactId)
+      if (contact) {
+        resolvedPhone = contact.properties.phone || contact.properties.mobilephone || contact.properties.hs_whatsapp_phone_number || ''
+        if (!resolvedName) {
+          resolvedName = [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' ') || null
+        }
+      }
     }
 
-    const normalizedPhone = normalizePhone(phone)
+    if (!resolvedPhone) {
+      return NextResponse.json({ error: 'No phone provided and could not resolve from HubSpot contact' }, { status: 400 })
+    }
+
+    const normalizedPhone = normalizePhone(resolvedPhone)
 
     if (await isInternalPhone(normalizedPhone)) {
       return NextResponse.json({ ok: true, skipped: 'internal_phone' })
@@ -130,7 +143,7 @@ export async function POST(req: NextRequest) {
     const message = await prisma.message.create({
       data: {
         contactPhone: normalizedPhone,
-        contactName,
+        contactName: resolvedName,
         direction: 'outbound',
         templateName,
         body: templateBody || `[Template: ${templateName}]`,
@@ -155,7 +168,7 @@ export async function POST(req: NextRequest) {
           where: { id: message.id },
           data: {
             hubspotContactId: contact.id,
-            contactName: isPlaceholder ? contact.properties.firstname : (contactName || [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' ') || null),
+            contactName: isPlaceholder ? contact.properties.firstname : (resolvedName || [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' ') || null),
           },
         })
         const dealId = await getContactDeals(contact.id).catch(() => null)
