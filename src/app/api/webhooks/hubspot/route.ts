@@ -114,6 +114,11 @@ export async function POST(req: NextRequest) {
         if (!resolvedName) {
           resolvedName = [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' ') || null
         }
+        if (!resolvedPhone) {
+          console.error(`Contact ${hubspotContactId} found but no phone fields:`, JSON.stringify(contact.properties))
+        }
+      } else {
+        console.error(`Could not fetch contact ${hubspotContactId} from HubSpot — may be a deal ID or invalid`)
       }
     }
 
