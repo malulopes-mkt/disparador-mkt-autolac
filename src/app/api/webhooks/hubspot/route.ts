@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
     let resolvedPhone = phone
     let resolvedName = contactName
 
+    let debugInfo: string | null = null
     if (!resolvedPhone && hubspotContactId) {
       const contact = await getContactById(hubspotContactId)
       if (contact) {
@@ -115,15 +116,19 @@ export async function POST(req: NextRequest) {
           resolvedName = [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' ') || null
         }
         if (!resolvedPhone) {
-          console.error(`Contact ${hubspotContactId} found but no phone fields:`, JSON.stringify(contact.properties))
+          debugInfo = `Contact ${hubspotContactId} found but no phone fields: ${JSON.stringify(contact.properties)}`
         }
       } else {
-        console.error(`Could not fetch contact ${hubspotContactId} from HubSpot — may be a deal ID or invalid`)
+        debugInfo = `getContactById(${hubspotContactId}) returned null — HubSpot API call failed (check HUBSPOT_ACCESS_TOKEN)`
       }
     }
 
     if (!resolvedPhone) {
-      return NextResponse.json({ error: 'No phone provided and could not resolve from HubSpot contact' }, { status: 400 })
+      return NextResponse.json({
+        error: 'No phone provided and could not resolve from HubSpot contact',
+        debug: debugInfo,
+        receivedFields: { phone, contactName, hubspotContactId, objectId: body.objectId },
+      }, { status: 400 })
     }
 
     const normalizedPhone = normalizePhone(resolvedPhone)
