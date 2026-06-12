@@ -134,12 +134,19 @@ export async function findOrCreateContact(phone: string): Promise<HubSpotContact
 }
 
 export async function getContactById(contactId: string): Promise<HubSpotContact | null> {
+  const token = await getToken()
+  if (!token) {
+    console.error('getContactById: HUBSPOT_ACCESS_TOKEN is empty/missing')
+    return null
+  }
   const props = ['firstname', 'lastname', 'phone', 'mobilephone', 'hs_whatsapp_phone_number', 'email'].join(',')
-  const res = await fetch(
-    `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}?properties=${props}`,
-    { headers: await headers() }
-  )
-  if (!res.ok) return null
+  const url = `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}?properties=${props}`
+  const res = await fetch(url, { headers: await headers() })
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '')
+    console.error(`getContactById(${contactId}) failed: HTTP ${res.status} — ${errBody}`)
+    return null
+  }
   const data = await res.json()
   return { id: data.id, properties: data.properties }
 }
