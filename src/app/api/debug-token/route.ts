@@ -69,7 +69,30 @@ export async function GET() {
     results.tokenPermissions = { error: String(err) }
   }
 
-  // Test 6: Try actual message send to see exact error
+  // Test 6: Check if app is subscribed to WABA
+  try {
+    const subRes = await fetch(`https://graph.facebook.com/v21.0/${wabaId}/subscribed_apps`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const subData = await subRes.json()
+    results.subscribedApps = { status: subRes.status, data: subData }
+  } catch (err) {
+    results.subscribedApps = { error: String(err) }
+  }
+
+  // Test 7: Try to subscribe app to WABA (if not already)
+  try {
+    const subscribeRes = await fetch(`https://graph.facebook.com/v21.0/${wabaId}/subscribed_apps`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const subscribeData = await subscribeRes.json()
+    results.subscribeAttempt = { status: subscribeRes.status, data: subscribeData }
+  } catch (err) {
+    results.subscribeAttempt = { error: String(err) }
+  }
+
+  // Test 8: Try actual message send to see exact error
   try {
     const sendBody = {
       messaging_product: 'whatsapp',
