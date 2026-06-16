@@ -19,30 +19,44 @@ async function verifyAuth(req: NextRequest): Promise<boolean> {
 
 async function fetchListContacts(listId: string, token: string) {
   const contacts: { id: string; phone: string; name: string | null }[] = []
-  let hasMore = true
-  let vidOffset = 0
+  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 
-  while (hasMore) {
-    const url = `${HUBSPOT_API}/contacts/v1/lists/${listId}/contacts/all?count=100&vidOffset=${vidOffset}&property=phone&property=mobilephone&property=hs_whatsapp_phone_number&property=firstname&property=lastname`
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+  const memberIds: string[] = []
+  let after: string | undefined
+
+  while (true) {
+    const url = `${HUBSPOT_API}/crm/v3/lists/${listId}/memberships?limit=100${after ? `&after=${after}` : ''}`
+    const res = await fetch(url, { headers })
     if (!res.ok) break
-
     const data = await res.json()
-    for (const c of data.contacts || []) {
-      const phone = c.properties?.phone?.value ||
-        c.properties?.mobilephone?.value ||
-        c.properties?.hs_whatsapp_phone_number?.value || ''
-      if (!phone) continue
-
-      const firstName = c.properties?.firstname?.value || ''
-      const lastName = c.properties?.lastname?.value || ''
-      const name = [firstName, lastName].filter(Boolean).join(' ') || null
-
-      contacts.push({ id: String(c.vid), phone, name })
+    for (const m of data.results || []) {
+      memberIds.push(String(m.recordId || m))
     }
+    if (!data.paging?.next?.after) break
+    after = data.paging.next.after
+  }
 
-    hasMore = data['has-more'] === true
-    vidOffset = data['vid-offset'] || 0
+  const BATCH_SIZE = 100
+  for (let i = 0; i < memberIds.length; i += BATCH_SIZE) {
+    const batch = memberIds.slice(i, i + BATCH_SIZE)
+    const res = await fetch(`${HUBSPOT_API}/crm/v3/objects/contacts/batch/read`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        properties: ['phone', 'mobilephone', 'hs_whatsapp_phone_number', 'firstname', 'lastname'],
+        inputs: batch.map(id => ({ id })),
+      }),
+    })
+    if (!res.ok) continue
+    const data = await res.json()
+    for (const c of data.results || []) {
+      const phone = c.properties?.phone || c.properties?.mobilephone || c.properties?.hs_whatsapp_phone_number || ''
+      if (!phone) continue
+      const firstName = c.properties?.firstname || ''
+      const lastName = c.properties?.lastname || ''
+      const name = [firstName, lastName].filter(Boolean).join(' ') || null
+      contacts.push({ id: c.id, phone, name })
+    }
   }
 
   return contacts
