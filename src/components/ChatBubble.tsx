@@ -35,8 +35,9 @@ const tipoLabels: Record<string, string> = {
 
 export default function ChatBubble({ body, direction, status, timestamp, templateName, classifyTipo, classifyTom, classifyPontos, classifyProximo }: ChatBubbleProps) {
   const isOutbound = direction === 'outbound'
-  const time = new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  const date = new Date(timestamp).toLocaleDateString('pt-BR')
+  const tz = 'America/Sao_Paulo'
+  const time = new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tz })
+  const date = new Date(timestamp).toLocaleDateString('pt-BR', { timeZone: tz })
   const hasClassification = classifyTipo || classifyTom
 
   return (

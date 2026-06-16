@@ -116,7 +116,7 @@ export default function TemplatesPage() {
                           </p>
                         )}
                         <p className="text-xs text-gray-600 mt-1">
-                          Sincronizado: {new Date(t.lastSyncedAt).toLocaleString('pt-BR')}
+                          Sincronizado: {new Date(t.lastSyncedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         </p>
                       </div>
                     ) : (

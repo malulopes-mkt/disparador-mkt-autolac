@@ -36,7 +36,7 @@ export function timeAgo(date: Date): string {
   if (hours < 24) return `${hours}h`
   const days = Math.floor(hours / 24)
   if (days < 7) return `${days}d`
-  return date.toLocaleDateString('pt-BR')
+  return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 }
 
 export function cn(...classes: (string | boolean | undefined | null)[]): string {
