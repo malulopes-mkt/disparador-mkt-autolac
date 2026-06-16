@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, use, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import ChatBubble from '@/components/ChatBubble'
 import { formatPhoneDisplay } from '@/lib/utils'
@@ -20,8 +20,8 @@ interface Message {
   classifyProximo: string | null
 }
 
-export default function ChatPage({ params }: { params: Promise<{ phone: string }> }) {
-  const { phone } = use(params)
+export default function ChatPage({ params }: { params: { phone: string } }) {
+  const { phone } = params
   const decodedPhone = decodeURIComponent(phone)
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
