@@ -12,10 +12,17 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { name, description, hubspotEventType, hubspotProperty, hubspotValue, templateName, variableMapping } = body
+  const { name, description, hubspotEventType, hubspotProperty, hubspotValue, templateName, variableMapping, segmentId, segmentName, scheduledAt } = body
 
   if (!name || !hubspotEventType || !templateName) {
     return NextResponse.json({ error: 'name, hubspotEventType, and templateName are required' }, { status: 400 })
+  }
+
+  let status = 'active'
+  if (segmentId && scheduledAt) {
+    status = 'scheduled'
+  } else if (segmentId) {
+    status = 'draft'
   }
 
   const trigger = await prisma.trigger.create({
@@ -27,6 +34,10 @@ export async function POST(req: NextRequest) {
       hubspotValue: hubspotValue || null,
       templateName,
       variableMapping: variableMapping ? JSON.stringify(variableMapping) : '{}',
+      segmentId: segmentId || null,
+      segmentName: segmentName || null,
+      scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+      status,
     },
   })
 

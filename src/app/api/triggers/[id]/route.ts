@@ -22,6 +22,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (body.templateName !== undefined) data.templateName = body.templateName
   if (body.active !== undefined) data.active = body.active
   if (body.variableMapping !== undefined) data.variableMapping = JSON.stringify(body.variableMapping)
+  if (body.segmentId !== undefined) data.segmentId = body.segmentId || null
+  if (body.segmentName !== undefined) data.segmentName = body.segmentName || null
+  if (body.scheduledAt !== undefined) data.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : null
+  if (body.status !== undefined) data.status = body.status
 
   const trigger = await prisma.trigger.update({ where: { id }, data })
   return NextResponse.json(trigger)
