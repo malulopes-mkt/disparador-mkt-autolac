@@ -23,6 +23,37 @@ export interface SendResult {
   messages: { id: string }[]
 }
 
+export async function sendText(
+  to: string,
+  text: string
+): Promise<SendResult> {
+  const { phoneNumberId, accessToken } = await getConfig()
+  const digits = to.replace(/\D/g, '')
+
+  const body = {
+    messaging_product: 'whatsapp',
+    to: digits,
+    type: 'text',
+    text: { body: text },
+  }
+
+  const res = await fetch(`${GRAPH_URL}/${phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(`Meta API error ${res.status}: ${JSON.stringify(err)}`)
+  }
+
+  return res.json()
+}
+
 export async function sendTemplate(
   to: string,
   templateName: string,
