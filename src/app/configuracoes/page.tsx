@@ -39,6 +39,13 @@ const SECTIONS = [
     ],
   },
   {
+    title: 'N8N Integracao',
+    description: 'Token de autenticacao para o N8N executar campanhas agendadas.',
+    fields: [
+      { key: 'N8N_WEBHOOK_TOKEN', label: 'Webhook Token', placeholder: 'Cole um token seguro...', type: 'password', help: 'Mesmo token configurado nos nos HTTP do workflow N8N' },
+    ],
+  },
+  {
     title: 'Meta App Secret',
     description: 'Chave secreta do app Meta para validacao HMAC dos webhooks.',
     fields: [
