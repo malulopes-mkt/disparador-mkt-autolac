@@ -489,8 +489,34 @@ function TriggerFormModal({
                     Carregando listas do HubSpot...
                   </div>
                 ) : listsError ? (
-                  <div className="text-xs text-red-400 py-2">{listsError}</div>
-                ) : (
+                  <div>
+                    <div className="text-xs text-amber-400 py-2 mb-2">
+                      Nao foi possivel carregar listas automaticamente. Adicione o scope <code className="text-cyan-400">crm.lists.read</code> ao token HubSpot.
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          value={segmentId}
+                          onChange={e => setSegmentId(e.target.value)}
+                          className="glass-input"
+                          placeholder="ID da lista (ex: 123)"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={segmentName}
+                          onChange={e => setSegmentName(e.target.value)}
+                          className="glass-input"
+                          placeholder="Nome da lista"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : lists.length > 0 ? (
                   <select
                     value={segmentId}
                     onChange={e => handleSegmentChange(e.target.value)}
@@ -504,6 +530,32 @@ function TriggerFormModal({
                       </option>
                     ))}
                   </select>
+                ) : (
+                  <div>
+                    <div className="text-xs text-gray-500 py-2 mb-2">Nenhuma lista encontrada. Insira manualmente:</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          value={segmentId}
+                          onChange={e => setSegmentId(e.target.value)}
+                          className="glass-input"
+                          placeholder="ID da lista (ex: 123)"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={segmentName}
+                          onChange={e => setSegmentName(e.target.value)}
+                          className="glass-input"
+                          placeholder="Nome da lista"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
