@@ -26,9 +26,10 @@ export async function GET(req: NextRequest) {
 
   const dbTemplates = await prisma.template.findMany({
     where: { status: 'APPROVED' },
-    select: { metaTemplateId: true },
+    select: { metaTemplateId: true, name: true },
   })
   const templateIds = dbTemplates.map(t => t.metaTemplateId)
+  const templateNameMap = new Map(dbTemplates.map(t => [t.metaTemplateId, t.name]))
 
   // Meta API limits template_ids to 10 per request — batch in chunks
   const CHUNK_SIZE = 10
@@ -85,7 +86,7 @@ export async function GET(req: NextRequest) {
       totalClicked += clickCount
 
       templates.push({
-        name: tp.templateName,
+        name: templateNameMap.get(tp.templateId) || tp.templateName || tp.templateId,
         sent: tp.sent,
         delivered: tp.delivered,
         read: tp.read,

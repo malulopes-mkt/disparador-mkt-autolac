@@ -267,21 +267,33 @@ export async function getTemplateAnalytics(
   }
 
   const data = await res.json()
-  const analytics = data?.template_analytics
+  const dataPoints = data?.template_analytics?.data?.[0]?.data_points
 
-  if (!analytics?.data_points?.length) {
+  if (!dataPoints?.length) {
     console.log('Template analytics raw response:', JSON.stringify(data).slice(0, 500))
     return { dataPoints: [] }
   }
 
+  // Aggregate daily data points per template
+  const byTemplate = new Map<string, { sent: number; delivered: number; read: number; clicked: number[] }>()
+  for (const dp of dataPoints) {
+    const id = String(dp.template_id || '')
+    const existing = byTemplate.get(id) || { sent: 0, delivered: 0, read: 0, clicked: [] }
+    existing.sent += Number(dp.sent || 0)
+    existing.delivered += Number(dp.delivered || 0)
+    existing.read += Number(dp.read || 0)
+    if (Array.isArray(dp.clicked)) existing.clicked.push(...dp.clicked)
+    byTemplate.set(id, existing)
+  }
+
   return {
-    dataPoints: analytics.data_points.map((dp: Record<string, unknown>) => ({
-      templateId: dp.template_id || '',
-      templateName: dp.template_name || '',
-      sent: dp.sent || 0,
-      delivered: dp.delivered || 0,
-      read: dp.read || 0,
-      clicked: dp.clicked || [],
+    dataPoints: Array.from(byTemplate.entries()).map(([id, agg]) => ({
+      templateId: id,
+      templateName: '',
+      sent: agg.sent,
+      delivered: agg.delivered,
+      read: agg.read,
+      clicked: agg.clicked,
     })),
   }
 }
