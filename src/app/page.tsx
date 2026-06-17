@@ -23,9 +23,26 @@ interface DashboardData {
   }[]
 }
 
+interface MetaInsights {
+  period: { start: string; end: string; days: number }
+  totals: { sent: number; delivered: number; deliveryRate: number }
+  daily: { date: string; sent: number; delivered: number }[]
+  templates: {
+    name: string
+    sent: number
+    delivered: number
+    read: number
+    deliveryRate: number
+    readRate: number
+  }[]
+  available: boolean
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
+  const [insights, setInsights] = useState<MetaInsights | null>(null)
   const [loading, setLoading] = useState(true)
+  const [insightsDays, setInsightsDays] = useState(30)
 
   useEffect(() => {
     fetch('/api/dashboard')
@@ -33,6 +50,13 @@ export default function DashboardPage() {
       .then(setData)
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    fetch(`/api/meta/insights?days=${insightsDays}`)
+      .then(r => r.json())
+      .then(setInsights)
+      .catch(() => setInsights(null))
+  }, [insightsDays])
 
   if (loading) return <PageLoader />
   if (!data) return <p className="text-gray-500">Erro ao carregar dados</p>
@@ -76,6 +100,99 @@ export default function DashboardPage() {
         />
       </div>
 
+      {insights?.available && (
+        <>
+          <div className="glass-card mb-8">
+            <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--glass-border)' }}>
+              <div>
+                <h2 className="font-semibold text-white text-sm">Insights Meta WhatsApp</h2>
+                <p className="text-[10px] text-gray-500 mt-0.5">Dados oficiais da API Meta Business</p>
+              </div>
+              <div className="flex gap-1">
+                {[7, 15, 30].map(d => (
+                  <button
+                    key={d}
+                    onClick={() => setInsightsDays(d)}
+                    className="px-3 py-1 rounded text-xs transition-colors"
+                    style={{
+                      background: insightsDays === d ? 'rgba(37,99,235,0.3)' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${insightsDays === d ? 'rgba(37,99,235,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                      color: insightsDays === d ? '#93c5fd' : '#9ca3af',
+                    }}
+                  >
+                    {d}d
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5">
+              <div className="text-center">
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Enviadas (Meta)</p>
+                <p className="text-2xl font-bold text-gradient mt-1">{insights.totals.sent.toLocaleString('pt-BR')}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Entregues (Meta)</p>
+                <p className="text-2xl font-bold text-gradient mt-1">{insights.totals.delivered.toLocaleString('pt-BR')}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Taxa Entrega (Meta)</p>
+                <p className="text-2xl font-bold text-gradient mt-1">{insights.totals.deliveryRate}%</p>
+              </div>
+            </div>
+
+            {insights.daily.length > 0 && (
+              <div className="px-5 pb-5">
+                <MiniChart data={insights.daily} />
+              </div>
+            )}
+          </div>
+
+          {insights.templates.length > 0 && (
+            <div className="glass-card mb-8">
+              <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--glass-border)' }}>
+                <h2 className="font-semibold text-white text-sm">Performance por Template</h2>
+                <p className="text-[10px] text-gray-500 mt-0.5">Metricas de cada template nos ultimos {insightsDays} dias</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3 text-left font-medium">Template</th>
+                      <th className="px-5 py-3 text-right font-medium">Enviadas</th>
+                      <th className="px-5 py-3 text-right font-medium">Entregues</th>
+                      <th className="px-5 py-3 text-right font-medium">Lidas</th>
+                      <th className="px-5 py-3 text-right font-medium">Entrega %</th>
+                      <th className="px-5 py-3 text-right font-medium">Leitura %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {insights.templates.map(t => (
+                      <tr key={t.name} className="border-t transition-colors hover:bg-white/[0.02]" style={{ borderColor: 'var(--glass-border)' }}>
+                        <td className="px-5 py-3 text-gray-200 font-medium">{t.name}</td>
+                        <td className="px-5 py-3 text-right text-gray-400">{t.sent.toLocaleString('pt-BR')}</td>
+                        <td className="px-5 py-3 text-right text-gray-400">{t.delivered.toLocaleString('pt-BR')}</td>
+                        <td className="px-5 py-3 text-right text-gray-400">{t.read.toLocaleString('pt-BR')}</td>
+                        <td className="px-5 py-3 text-right">
+                          <span className={t.deliveryRate >= 90 ? 'text-emerald-400' : t.deliveryRate >= 70 ? 'text-yellow-400' : 'text-red-400'}>
+                            {t.deliveryRate}%
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <span className={t.readRate >= 50 ? 'text-emerald-400' : t.readRate >= 30 ? 'text-yellow-400' : 'text-red-400'}>
+                            {t.readRate}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       <div className="glass-card">
         <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--glass-border)' }}>
           <h2 className="font-semibold text-white text-sm">Ultimas Mensagens Enviadas</h2>
@@ -104,6 +221,66 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function MiniChart({ data }: { data: { date: string; sent: number; delivered: number }[] }) {
+  if (data.length === 0) return null
+
+  const maxVal = Math.max(...data.map(d => d.sent), 1)
+  const chartHeight = 120
+  const barWidth = Math.max(4, Math.min(20, Math.floor(600 / data.length) - 2))
+
+  return (
+    <div>
+      <div className="flex items-center gap-4 mb-3">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgba(37,99,235,0.7)' }} />
+          <span className="text-[10px] text-gray-500">Enviadas</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgba(16,185,129,0.7)' }} />
+          <span className="text-[10px] text-gray-500">Entregues</span>
+        </div>
+      </div>
+      <div className="flex items-end gap-[2px] overflow-x-auto pb-1" style={{ height: chartHeight + 24 }}>
+        {data.map((d, i) => {
+          const sentH = (d.sent / maxVal) * chartHeight
+          const deliveredH = (d.delivered / maxVal) * chartHeight
+          const label = d.date.slice(5)
+          const showLabel = data.length <= 15 || i % Math.ceil(data.length / 15) === 0
+          return (
+            <div key={d.date} className="flex flex-col items-center group relative" style={{ minWidth: barWidth + 2 }}>
+              <div className="absolute bottom-full mb-1 hidden group-hover:block z-10 px-2 py-1 rounded text-[10px] whitespace-nowrap" style={{ background: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span className="text-gray-300">{d.date}</span><br />
+                <span className="text-blue-400">{d.sent} env</span> · <span className="text-emerald-400">{d.delivered} ent</span>
+              </div>
+              <div className="flex gap-[1px]" style={{ height: chartHeight, alignItems: 'flex-end' }}>
+                <div
+                  className="rounded-t-sm transition-all"
+                  style={{
+                    width: barWidth / 2,
+                    height: Math.max(sentH, 2),
+                    background: 'rgba(37,99,235,0.6)',
+                  }}
+                />
+                <div
+                  className="rounded-t-sm transition-all"
+                  style={{
+                    width: barWidth / 2,
+                    height: Math.max(deliveredH, 2),
+                    background: 'rgba(16,185,129,0.6)',
+                  }}
+                />
+              </div>
+              {showLabel && (
+                <span className="text-[8px] text-gray-600 mt-1 leading-none">{label}</span>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -186,6 +186,103 @@ export interface StatusUpdate {
   errors?: { code: number; title: string }[]
 }
 
+export interface WABAAnalytics {
+  dataPoints: {
+    start: number
+    end: number
+    sent: number
+    delivered: number
+  }[]
+}
+
+export interface TemplateAnalyticsPoint {
+  templateId: string
+  templateName: string
+  sent: number
+  delivered: number
+  read: number
+  clicked: number[]
+}
+
+export interface TemplateAnalytics {
+  dataPoints: TemplateAnalyticsPoint[]
+}
+
+export async function getWABAAnalytics(
+  startDate: Date,
+  endDate: Date,
+  granularity: 'HALF_HOUR' | 'DAY' | 'MONTH' = 'DAY'
+): Promise<WABAAnalytics | null> {
+  const { wabaId, accessToken } = await getConfig()
+  if (!wabaId || !accessToken) return null
+
+  const startUnix = Math.floor(startDate.getTime() / 1000)
+  const endUnix = Math.floor(endDate.getTime() / 1000)
+
+  const url = `${GRAPH_URL}/${wabaId}?fields=analytics.start(${startUnix}).end(${endUnix}).granularity(${granularity})&access_token=${accessToken}`
+  const res = await fetch(url)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    console.error('Meta Analytics error:', res.status, err)
+    return null
+  }
+
+  const data = await res.json()
+  const analytics = data?.analytics
+
+  if (!analytics?.data_points) return { dataPoints: [] }
+
+  return {
+    dataPoints: analytics.data_points.map((dp: Record<string, unknown>) => ({
+      start: dp.start,
+      end: dp.end,
+      sent: dp.sent || 0,
+      delivered: dp.delivered || 0,
+    })),
+  }
+}
+
+export async function getTemplateAnalytics(
+  startDate: Date,
+  endDate: Date,
+  templateIds?: string[]
+): Promise<TemplateAnalytics | null> {
+  const { wabaId, accessToken } = await getConfig()
+  if (!wabaId || !accessToken) return null
+
+  const startUnix = Math.floor(startDate.getTime() / 1000)
+  const endUnix = Math.floor(endDate.getTime() / 1000)
+
+  let fields = `template_analytics.start(${startUnix}).end(${endUnix}).granularity(DAILY)`
+  if (templateIds?.length) {
+    fields += `.template_ids(${templateIds.join(',')})`
+  }
+
+  const url = `${GRAPH_URL}/${wabaId}?fields=${fields}&access_token=${accessToken}`
+  const res = await fetch(url)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    console.error('Meta Template Analytics error:', res.status, err)
+    return null
+  }
+
+  const data = await res.json()
+  const analytics = data?.template_analytics
+
+  if (!analytics?.data_points) return { dataPoints: [] }
+
+  return {
+    dataPoints: analytics.data_points.map((dp: Record<string, unknown>) => ({
+      templateId: dp.template_id || '',
+      templateName: dp.template_name || '',
+      sent: dp.sent || 0,
+      delivered: dp.delivered || 0,
+      read: dp.read || 0,
+      clicked: dp.clicked || [],
+    })),
+  }
+}
+
 export function parseWebhookPayload(body: Record<string, unknown>): {
   messages: IncomingMessage[]
   statuses: StatusUpdate[]
