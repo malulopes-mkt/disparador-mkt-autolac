@@ -4,12 +4,13 @@ import { prisma } from '@/lib/db'
 import { getSetting } from '@/lib/settings'
 
 export async function GET(req: NextRequest) {
+  const tokenHeader = req.headers.get('x-webhook-token')
+  if (!tokenHeader) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const expectedToken = await getSetting('N8N_WEBHOOK_TOKEN')
-  if (expectedToken) {
-    const tokenHeader = req.headers.get('x-webhook-token')
-    if (tokenHeader !== expectedToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!expectedToken || tokenHeader !== expectedToken) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const now = new Date()
