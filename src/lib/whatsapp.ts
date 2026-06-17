@@ -253,7 +253,7 @@ export async function getTemplateAnalytics(
   const startUnix = Math.floor(startDate.getTime() / 1000)
   const endUnix = Math.floor(endDate.getTime() / 1000)
 
-  let fields = `template_analytics.start(${startUnix}).end(${endUnix}).granularity(DAILY)`
+  let fields = `template_analytics.start(${startUnix}).end(${endUnix}).granularity(DAILY).metric_types(sent,delivered,read,clicked)`
   if (templateIds?.length) {
     fields += `.template_ids(${templateIds.join(',')})`
   }
@@ -269,7 +269,10 @@ export async function getTemplateAnalytics(
   const data = await res.json()
   const analytics = data?.template_analytics
 
-  if (!analytics?.data_points) return { dataPoints: [] }
+  if (!analytics?.data_points?.length) {
+    console.log('Template analytics raw response:', JSON.stringify(data).slice(0, 500))
+    return { dataPoints: [] }
+  }
 
   return {
     dataPoints: analytics.data_points.map((dp: Record<string, unknown>) => ({
