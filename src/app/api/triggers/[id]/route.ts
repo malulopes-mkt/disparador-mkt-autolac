@@ -27,6 +27,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (body.scheduledAt !== undefined) data.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : null
   if (body.status !== undefined) data.status = body.status
 
+  if (body.segmentId && data.status === undefined) {
+    const existing = await prisma.trigger.findUnique({ where: { id } })
+    if (existing && (existing.status === 'draft' || existing.status === 'active')) {
+      data.status = 'scheduled'
+    }
+  }
+
   const trigger = await prisma.trigger.update({ where: { id }, data })
   return NextResponse.json(trigger)
 }

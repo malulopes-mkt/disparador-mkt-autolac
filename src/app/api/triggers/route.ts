@@ -19,10 +19,8 @@ export async function POST(req: NextRequest) {
   }
 
   let status = 'active'
-  if (segmentId && scheduledAt) {
+  if (segmentId) {
     status = 'scheduled'
-  } else if (segmentId) {
-    status = 'draft'
   }
 
   const trigger = await prisma.trigger.create({

@@ -18,9 +18,12 @@ export async function GET(req: NextRequest) {
   const pending = await prisma.trigger.findMany({
     where: {
       status: 'scheduled',
-      scheduledAt: { lte: now },
       segmentId: { not: null },
       active: true,
+      OR: [
+        { scheduledAt: null },
+        { scheduledAt: { lte: now } },
+      ],
     },
     select: {
       id: true,
