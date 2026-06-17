@@ -1,0 +1,114 @@
+{
+  "name": "WhatsApp MKT - Disparar Campanhas Agendadas",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-1111-4444-aaaa-000000000001",
+      "name": "A cada 2 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://campanhas.apps.wmi.solutions/api/campaigns/pending",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-webhook-token",
+              "value": "={{ $env.N8N_WEBHOOK_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-2222-4444-aaaa-000000000002",
+      "name": "Buscar Campanhas Pendentes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst campaigns = data.pending || (Array.isArray(data) ? data : []);\n\nif (!campaigns.length) {\n  return [];\n}\n\nreturn campaigns.map(c => ({ json: c }));"
+      },
+      "id": "a1b2c3d4-3333-4444-aaaa-000000000003",
+      "name": "Filtrar Campanhas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [780, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://campanhas.apps.wmi.solutions/api/campaigns/{{ $json.id }}/execute",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-webhook-token",
+              "value": "={{ $env.N8N_WEBHOOK_TOKEN }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "a1b2c3d4-4444-4444-aaaa-000000000004",
+      "name": "Executar Campanha",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 300]
+    }
+  ],
+  "connections": {
+    "A cada 2 minutos": {
+      "main": [
+        [
+          {
+            "node": "Buscar Campanhas Pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Campanhas Pendentes": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Campanhas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Campanhas": {
+      "main": [
+        [
+          {
+            "node": "Executar Campanha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

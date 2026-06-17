@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Paths publicos exatos (match exato, nao prefixo)
-const PUBLIC_PATHS_EXACT = ['/api/webhooks/whatsapp', '/api/webhooks/hubspot', '/api/health']
-// Paths publicos por prefixo (assets, static files)
-const PUBLIC_PATHS_PREFIX = ['/_next/', '/favicon.ico']
+const PUBLIC_PATHS_EXACT = ['/api/webhooks/whatsapp', '/api/webhooks/hubspot', '/api/health', '/api/campaigns/pending']
+// Paths publicos por prefixo (assets, static files, N8N campaign execution)
+const PUBLIC_PATHS_PREFIX = ['/_next/', '/favicon.ico', '/api/campaigns/']
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
