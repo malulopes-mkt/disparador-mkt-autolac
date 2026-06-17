@@ -30,10 +30,21 @@ export async function GET(req: NextRequest) {
   })
   const templateIds = dbTemplates.map(t => t.metaTemplateId)
 
-  const [analytics, templateAnalytics] = await Promise.all([
+  // Meta API limits template_ids to 10 per request — batch in chunks
+  const CHUNK_SIZE = 10
+  const templateChunks: string[][] = []
+  for (let i = 0; i < templateIds.length; i += CHUNK_SIZE) {
+    templateChunks.push(templateIds.slice(i, i + CHUNK_SIZE))
+  }
+
+  const [analytics, ...templateResults] = await Promise.all([
     getWABAAnalytics(startDate, endDate, diffDays <= 1 ? 'HALF_HOUR' : 'DAY'),
-    templateIds.length > 0 ? getTemplateAnalytics(startDate, endDate, templateIds) : Promise.resolve(null),
+    ...templateChunks.map(chunk => getTemplateAnalytics(startDate, endDate, chunk)),
   ])
+
+  const templateAnalytics = {
+    dataPoints: templateResults.flatMap(r => r?.dataPoints || []),
+  }
 
   let totalSent = 0
   let totalDelivered = 0
