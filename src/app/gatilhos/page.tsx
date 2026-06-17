@@ -568,7 +568,7 @@ function TriggerFormModal({
                   value={scheduledAt}
                   onChange={e => setScheduledAt(e.target.value)}
                   className="glass-input"
-                  min={new Date().toISOString().slice(0, 16)}
+                  min={(() => { const n = new Date(); return new Date(n.getTime() - n.getTimezoneOffset() * 60000).toISOString().slice(0, 16) })()}
                 />
                 <p className="text-xs text-gray-600 mt-1">
                   {scheduledAt
