@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getWABAAnalytics, getTemplateAnalytics } from '@/lib/whatsapp'
+import { prisma } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -23,9 +24,15 @@ export async function GET(req: NextRequest) {
 
   const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
 
+  const dbTemplates = await prisma.template.findMany({
+    where: { status: 'APPROVED' },
+    select: { metaTemplateId: true },
+  })
+  const templateIds = dbTemplates.map(t => t.metaTemplateId)
+
   const [analytics, templateAnalytics] = await Promise.all([
     getWABAAnalytics(startDate, endDate, diffDays <= 1 ? 'HALF_HOUR' : 'DAY'),
-    getTemplateAnalytics(startDate, endDate),
+    templateIds.length > 0 ? getTemplateAnalytics(startDate, endDate, templateIds) : Promise.resolve(null),
   ])
 
   let totalSent = 0
