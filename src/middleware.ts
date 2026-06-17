@@ -7,7 +7,22 @@ const PUBLIC_PATHS_EXACT = ['/api/webhooks/whatsapp', '/api/webhooks/hubspot', '
 const PUBLIC_PATHS_PREFIX = ['/_next/', '/favicon.ico', '/api/campaigns/', '/api/webhooks/']
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
+  const { pathname, searchParams } = req.nextUrl
+
+  // N8N requests piggyback on the whitelisted /api/webhooks/whatsapp path
+  // to bypass the Traefik SSO forwardAuth proxy layer
+  if (pathname === '/api/webhooks/whatsapp' && searchParams.get('source') === 'n8n') {
+    const action = searchParams.get('action')
+    if (action === 'pending') {
+      return NextResponse.rewrite(new URL('/api/webhooks/n8n/pending', req.url))
+    }
+    if (action === 'execute') {
+      const id = searchParams.get('id')
+      if (id) {
+        return NextResponse.rewrite(new URL(`/api/webhooks/n8n/${id}/execute`, req.url))
+      }
+    }
+  }
 
   // Paths publicos passam direto
   const isPublic = PUBLIC_PATHS_EXACT.includes(pathname)
