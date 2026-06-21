@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { syncTemplatesFromMeta, extractTemplateBody, extractTemplateVariables, extractHeaderMediaUrl } from '@/lib/whatsapp'
+import { syncTemplatesFromMeta, extractTemplateBody, extractTemplateVariables, extractHeaderMediaUrl, downloadAndUploadMedia } from '@/lib/whatsapp'
 
 export async function POST() {
   try {
@@ -15,7 +15,10 @@ export async function POST() {
 
       const existing = await prisma.template.findUnique({ where: { metaTemplateId: t.id } })
 
-      await prisma.template.upsert({
+      const keepExistingMedia = existing?.headerMediaUrl?.startsWith('mid:') ?? false
+      const resolvedMediaUrl = keepExistingMedia ? existing!.headerMediaUrl : headerMediaUrl
+
+      const record = await prisma.template.upsert({
         where: { metaTemplateId: t.id },
         update: {
           name: t.name,
@@ -25,7 +28,7 @@ export async function POST() {
           bodyText,
           variables: JSON.stringify(variables),
           componentsJson: JSON.stringify(t.components),
-          headerMediaUrl: existing?.headerMediaUrl || headerMediaUrl,
+          headerMediaUrl: resolvedMediaUrl,
           lastSyncedAt: new Date(),
         },
         create: {
@@ -40,6 +43,19 @@ export async function POST() {
           headerMediaUrl,
         },
       })
+
+      if (record.headerMediaUrl && !record.headerMediaUrl.startsWith('mid:')) {
+        try {
+          const mediaIdValue = await downloadAndUploadMedia(record.headerMediaUrl)
+          await prisma.template.update({
+            where: { id: record.id },
+            data: { headerMediaUrl: mediaIdValue },
+          })
+        } catch (uploadErr) {
+          console.warn(`[sync] Media upload failed for "${t.name}":`, uploadErr instanceof Error ? uploadErr.message : uploadErr)
+        }
+      }
+
       synced++
     }
 
