@@ -1,5 +1,5 @@
 import { prisma } from './db'
-import { sendTemplate } from './whatsapp'
+import { sendTemplate, buildHeaderComponent, TemplateComponent } from './whatsapp'
 import { normalizePhone, isInternalPhone } from './utils'
 import { getSetting } from './settings'
 import { createCommunicationNote, getContactDeals } from './hubspot'
@@ -84,6 +84,12 @@ async function executeCampaign(triggerId: string) {
   const templateBody = dbTemplate?.bodyText || `[Template: ${trigger.templateName}]`
   const templateLanguage = dbTemplate?.language || 'pt_BR'
 
+  const components: TemplateComponent[] = []
+  if (dbTemplate) {
+    const headerComp = buildHeaderComponent(dbTemplate.componentsJson, dbTemplate.headerMediaUrl)
+    if (headerComp) components.push(headerComp)
+  }
+
   let sent = 0
   let failed = 0
 
@@ -92,7 +98,7 @@ async function executeCampaign(triggerId: string) {
       const normalizedPhone = normalizePhone(contact.phone)
       if (await isInternalPhone(normalizedPhone)) continue
 
-      const result = await sendTemplate(normalizedPhone, trigger.templateName, templateLanguage)
+      const result = await sendTemplate(normalizedPhone, trigger.templateName, templateLanguage, components.length > 0 ? components : undefined)
       const waMessageId = result.messages?.[0]?.id || null
 
       await prisma.message.create({

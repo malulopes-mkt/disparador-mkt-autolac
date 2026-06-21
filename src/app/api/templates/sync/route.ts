@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { syncTemplatesFromMeta, extractTemplateBody, extractTemplateVariables } from '@/lib/whatsapp'
+import { syncTemplatesFromMeta, extractTemplateBody, extractTemplateVariables, extractHeaderMediaUrl } from '@/lib/whatsapp'
 
 export async function POST() {
   try {
@@ -11,6 +11,9 @@ export async function POST() {
     for (const t of metaTemplates) {
       const bodyText = extractTemplateBody(t.components)
       const variables = extractTemplateVariables(bodyText)
+      const headerMediaUrl = extractHeaderMediaUrl(t.components)
+
+      const existing = await prisma.template.findUnique({ where: { metaTemplateId: t.id } })
 
       await prisma.template.upsert({
         where: { metaTemplateId: t.id },
@@ -21,6 +24,8 @@ export async function POST() {
           category: t.category,
           bodyText,
           variables: JSON.stringify(variables),
+          componentsJson: JSON.stringify(t.components),
+          headerMediaUrl: existing?.headerMediaUrl || headerMediaUrl,
           lastSyncedAt: new Date(),
         },
         create: {
@@ -31,6 +36,8 @@ export async function POST() {
           category: t.category,
           bodyText,
           variables: JSON.stringify(variables),
+          componentsJson: JSON.stringify(t.components),
+          headerMediaUrl,
         },
       })
       synced++

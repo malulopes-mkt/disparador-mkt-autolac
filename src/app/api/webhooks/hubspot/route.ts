@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { prisma } from '@/lib/db'
-import { sendTemplate, TemplateComponent } from '@/lib/whatsapp'
+import { sendTemplate, buildHeaderComponent, TemplateComponent } from '@/lib/whatsapp'
 import { findOrCreateContact, createCommunicationNote, getContactDeals, getContactById } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { getSetting } from '@/lib/settings'
@@ -163,6 +163,13 @@ export async function POST(req: NextRequest) {
           components = [{ type: 'body', parameters }]
         }
       }
+
+      if (dbTemplate) {
+        const headerComp = buildHeaderComponent(dbTemplate.componentsJson, dbTemplate.headerMediaUrl)
+        if (headerComp) {
+          components = components ? [headerComp, ...components] : [headerComp]
+        }
+      }
     } else {
       const triggers = await prisma.trigger.findMany({
         where: { active: true, hubspotEventType: eventType },
@@ -206,6 +213,13 @@ export async function POST(req: NextRequest) {
             components = [{ type: 'body', parameters }]
           }
         } catch { /* ignore bad JSON */ }
+      }
+
+      if (dbTemplate) {
+        const headerComp = buildHeaderComponent(dbTemplate.componentsJson, dbTemplate.headerMediaUrl)
+        if (headerComp) {
+          components = components ? [headerComp, ...components] : [headerComp]
+        }
       }
     }
 
