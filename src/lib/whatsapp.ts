@@ -14,7 +14,32 @@ async function getConfig() {
 
 export interface TemplateComponent {
   type: 'header' | 'body' | 'button'
-  parameters: { type: 'text'; text: string }[]
+  parameters: (
+    | { type: 'text'; text: string }
+    | { type: 'image'; image: { link: string } }
+    | { type: 'video'; video: { link: string } }
+    | { type: 'document'; document: { link: string } }
+  )[]
+}
+
+export function buildHeaderComponent(
+  componentsJson: string,
+  headerMediaUrl?: string | null
+): TemplateComponent | null {
+  if (!headerMediaUrl) return null
+  try {
+    const components = JSON.parse(componentsJson) as { type: string; format?: string }[]
+    const header = components.find(c => c.type === 'HEADER')
+    if (!header?.format) return null
+    const format = header.format.toLowerCase() as 'image' | 'video' | 'document'
+    if (!['image', 'video', 'document'].includes(format)) return null
+    return {
+      type: 'header',
+      parameters: [{ type: format, [format]: { link: headerMediaUrl } } as TemplateComponent['parameters'][0]],
+    }
+  } catch {
+    return null
+  }
 }
 
 export interface SendResult {
@@ -97,7 +122,7 @@ export interface MetaTemplate {
   language: string
   status: string
   category: string
-  components: { type: string; text?: string }[]
+  components: { type: string; format?: string; text?: string; example?: { header_handle?: string[]; header_url?: string[] } }[]
 }
 
 export async function syncTemplatesFromMeta(): Promise<MetaTemplate[]> {
@@ -119,6 +144,13 @@ export async function syncTemplatesFromMeta(): Promise<MetaTemplate[]> {
   }
 
   return templates
+}
+
+export function extractHeaderMediaUrl(components: MetaTemplate['components']): string | null {
+  const header = components.find(c => c.type === 'HEADER' && c.format && ['IMAGE', 'VIDEO', 'DOCUMENT'].includes(c.format))
+  if (!header?.example) return null
+  const urls = header.example.header_url || header.example.header_handle
+  return urls?.[0] || null
 }
 
 export function extractTemplateBody(components: { type: string; text?: string }[]): string {

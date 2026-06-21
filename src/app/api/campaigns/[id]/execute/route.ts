@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { sendTemplate } from '@/lib/whatsapp'
+import { sendTemplate, buildHeaderComponent, TemplateComponent } from '@/lib/whatsapp'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { getSetting } from '@/lib/settings'
 import { createCommunicationNote, getContactDeals } from '@/lib/hubspot'
@@ -105,6 +105,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const templateBody = dbTemplate?.bodyText || `[Template: ${trigger.templateName}]`
   const templateLanguage = dbTemplate?.language || 'pt_BR'
 
+  const components: TemplateComponent[] = []
+  if (dbTemplate) {
+    const headerComp = buildHeaderComponent(dbTemplate.componentsJson, dbTemplate.headerMediaUrl)
+    if (headerComp) components.push(headerComp)
+  }
+
   let sent = 0
   let failed = 0
 
@@ -114,7 +120,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       if (await isInternalPhone(normalizedPhone)) continue
 
-      const result = await sendTemplate(normalizedPhone, trigger.templateName, templateLanguage)
+      const result = await sendTemplate(normalizedPhone, trigger.templateName, templateLanguage, components.length > 0 ? components : undefined)
       const waMessageId = result.messages?.[0]?.id || null
 
       await prisma.message.create({

@@ -68,5 +68,7 @@ model Template {
   category       String
   bodyText       String
   variables      String   @default("[]")
+  componentsJson String   @default("[]")
+  headerMediaUrl String?
   lastSyncedAt   DateTime @default(now())
 }
