@@ -16,11 +16,13 @@ export interface TemplateComponent {
   type: 'header' | 'body' | 'button'
   parameters: (
     | { type: 'text'; text: string }
-    | { type: 'image'; image: { link: string } }
-    | { type: 'video'; video: { link: string } }
-    | { type: 'document'; document: { link: string } }
+    | { type: 'image'; image: { link: string } | { id: string } }
+    | { type: 'video'; video: { link: string } | { id: string } }
+    | { type: 'document'; document: { link: string } | { id: string } }
   )[]
 }
+
+const MEDIA_ID_PREFIX = 'mid:'
 
 export function buildHeaderComponent(
   componentsJson: string,
@@ -33,13 +35,57 @@ export function buildHeaderComponent(
     if (!header?.format) return null
     const format = header.format.toLowerCase() as 'image' | 'video' | 'document'
     if (!['image', 'video', 'document'].includes(format)) return null
+
+    const mediaRef = headerMediaUrl.startsWith(MEDIA_ID_PREFIX)
+      ? { id: headerMediaUrl.slice(MEDIA_ID_PREFIX.length) }
+      : { link: headerMediaUrl }
+
     return {
       type: 'header',
-      parameters: [{ type: format, [format]: { link: headerMediaUrl } } as TemplateComponent['parameters'][0]],
+      parameters: [{ type: format, [format]: mediaRef } as TemplateComponent['parameters'][0]],
     }
   } catch {
     return null
   }
+}
+
+export async function uploadMediaToMeta(
+  imageBuffer: Uint8Array,
+  mimeType: string
+): Promise<string> {
+  const { phoneNumberId, accessToken } = await getConfig()
+
+  const formData = new FormData()
+  formData.append('messaging_product', 'whatsapp')
+  formData.append('type', mimeType)
+  formData.append('file', new Blob([imageBuffer.slice().buffer as ArrayBuffer], { type: mimeType }), 'media')
+
+  const res = await fetch(`${GRAPH_URL}/${phoneNumberId}/media`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: formData,
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(`Media upload failed ${res.status}: ${JSON.stringify(err)}`)
+  }
+
+  const data = await res.json()
+  return data.id as string
+}
+
+export async function downloadAndUploadMedia(sourceUrl: string): Promise<string> {
+  const imgRes = await fetch(sourceUrl)
+  if (!imgRes.ok) {
+    throw new Error(`Failed to download image: ${imgRes.status} ${imgRes.statusText}`)
+  }
+
+  const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
+  const arrayBuf = await imgRes.arrayBuffer()
+  const buffer = new Uint8Array(arrayBuf)
+  const mediaId = await uploadMediaToMeta(buffer, contentType)
+  return `${MEDIA_ID_PREFIX}${mediaId}`
 }
 
 export interface SendResult {
