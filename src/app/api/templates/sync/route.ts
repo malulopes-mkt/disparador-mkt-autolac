@@ -59,7 +59,12 @@ export async function POST() {
       synced++
     }
 
-    return NextResponse.json({ ok: true, synced })
+    const metaIds = metaTemplates.map(t => t.id)
+    const removed = await prisma.template.deleteMany({
+      where: { metaTemplateId: { notIn: metaIds } },
+    })
+
+    return NextResponse.json({ ok: true, synced, removed: removed.count })
   } catch (err) {
     console.error('Template sync error:', err)
     return NextResponse.json(
