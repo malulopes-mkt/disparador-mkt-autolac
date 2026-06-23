@@ -108,8 +108,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchInsights(startDate, endDate)
-    fetchPricing(startDate, endDate)
-  }, [startDate, endDate, fetchInsights, fetchPricing])
+  }, [startDate, endDate, fetchInsights])
 
   function applyPreset(days: number) {
     const end = new Date()
@@ -289,9 +288,11 @@ export default function DashboardPage() {
       )}
 
       {/* Precos das mensagens */}
-      {pricing && (
-        <PricingSection pricing={pricing} loading={pricingLoading} />
-      )}
+      <PricingSection
+        pricing={pricing}
+        loading={pricingLoading}
+        onDateChange={fetchPricing}
+      />
 
       {/* Ultimas mensagens */}
       <div className="glass-card">
@@ -622,10 +623,44 @@ function formatCurrency(value: number): string {
   return `$${value.toFixed(2).replace('.', ',')}`
 }
 
-function PricingSection({ pricing, loading }: { pricing: PricingData; loading: boolean }) {
+function PricingSection({
+  pricing,
+  loading,
+  onDateChange,
+}: {
+  pricing: PricingData | null
+  loading: boolean
+  onDateChange: (start: Date, end: Date) => void
+}) {
+  const today = new Date()
+  const [pStartDate, setPStartDate] = useState<Date>(today)
+  const [pEndDate, setPEndDate] = useState<Date>(today)
+  const [showPicker, setShowPicker] = useState(false)
+
+  useEffect(() => {
+    onDateChange(pStartDate, pEndDate)
+  }, [])
+
+  function applyPreset(days: number) {
+    const end = new Date()
+    const start = new Date()
+    start.setDate(start.getDate() - days)
+    setPStartDate(start)
+    setPEndDate(end)
+    setShowPicker(false)
+    onDateChange(start, end)
+  }
+
+  function applyCustom(start: Date, end: Date) {
+    setPStartDate(start)
+    setPEndDate(end)
+    setShowPicker(false)
+    onDateChange(start, end)
+  }
+
   return (
     <div className="glass-card mb-8 relative">
-      <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--glass-border)' }}>
+      <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3" style={{ borderColor: 'var(--glass-border)' }}>
         <div>
           <h2 className="font-semibold text-white text-sm flex items-center gap-2">
             <DollarIcon />
@@ -633,7 +668,35 @@ function PricingSection({ pricing, loading }: { pricing: PricingData; loading: b
           </h2>
           <p className="text-[10px] text-gray-500 mt-0.5">Estimativa baseada nas tarifas Meta por categoria</p>
         </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowPicker(!showPicker)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <CalendarSmallIcon />
+            <span className="text-gray-300">{formatDateBR(pStartDate)} - {formatDateBR(pEndDate)}</span>
+            <ChevronDownIcon />
+          </button>
+
+          {showPicker && (
+            <DateRangePicker
+              startDate={pStartDate}
+              endDate={pEndDate}
+              onApply={(s, e) => applyCustom(s, e)}
+              onPreset={applyPreset}
+              onClose={() => setShowPicker(false)}
+            />
+          )}
+        </div>
       </div>
+
+      {!pricing ? (
+        <div className="px-5 py-12 flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+      <>
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-x border-b" style={{ borderColor: 'var(--glass-border)' }}>
@@ -671,7 +734,10 @@ function PricingSection({ pricing, loading }: { pricing: PricingData; loading: b
         </PricingSummaryCell>
       </div>
 
-      {loading && (
+      </>
+      )}
+
+      {loading && pricing && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>

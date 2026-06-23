@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getWABAAnalytics } from '@/lib/whatsapp'
 
 const RATES_BRL: Record<string, number> = {
   MARKETING: 0.0625,
@@ -30,13 +31,17 @@ export async function GET(req: NextRequest) {
     startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1)
   }
 
-  const [outboundMessages, inboundCount, templates] = await Promise.all([
+  const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+  const [metaAnalytics, outboundMessages, inboundCount, templates] = await Promise.all([
+    getWABAAnalytics(startDate, endDate, diffDays <= 1 ? 'HALF_HOUR' : 'DAY'),
     prisma.message.findMany({
       where: {
         direction: 'outbound',
         timestamp: { gte: startDate, lte: endDate },
+        status: { not: 'failed' },
       },
-      select: { templateName: true, status: true },
+      select: { templateName: true },
     }),
     prisma.message.count({
       where: {
@@ -49,22 +54,42 @@ export async function GET(req: NextRequest) {
     }),
   ])
 
+  let metaSent = 0
+  let metaDelivered = 0
+  if (metaAnalytics?.dataPoints) {
+    for (const dp of metaAnalytics.dataPoints) {
+      metaSent += dp.sent
+      metaDelivered += dp.delivered
+    }
+  }
+
   const categoryMap = new Map(templates.map(t => [t.name, t.category.toUpperCase()]))
 
   const sentByCategory: Record<string, number> = {}
-  const deliveredByCategory: Record<string, number> = {}
-  let totalSent = 0
-  let totalDelivered = 0
+  let dbSentTotal = 0
 
   for (const msg of outboundMessages) {
     const category = (msg.templateName && categoryMap.get(msg.templateName)) || 'MARKETING'
-    totalSent++
+    dbSentTotal++
     sentByCategory[category] = (sentByCategory[category] || 0) + 1
+  }
 
-    if (msg.status === 'delivered' || msg.status === 'read') {
-      totalDelivered++
-      deliveredByCategory[category] = (deliveredByCategory[category] || 0) + 1
-    }
+  const totalSent = metaSent || dbSentTotal
+  const deliveryRate = totalSent > 0 && metaDelivered > 0
+    ? metaDelivered / metaSent
+    : 0.98
+
+  const totalDelivered = metaDelivered || Math.round(dbSentTotal * deliveryRate)
+
+  const deliveredByCategory: Record<string, number> = {}
+  for (const cat of Object.keys(sentByCategory)) {
+    deliveredByCategory[cat] = Math.round((sentByCategory[cat] || 0) * deliveryRate)
+  }
+
+  const recalcDelivered = Object.values(deliveredByCategory).reduce((a, b) => a + b, 0)
+  if (recalcDelivered !== totalDelivered && Object.keys(deliveredByCategory).length > 0) {
+    const topCat = Object.entries(deliveredByCategory).sort((a, b) => b[1] - a[1])[0]
+    if (topCat) deliveredByCategory[topCat[0]] += totalDelivered - recalcDelivered
   }
 
   const serviceDelivered = deliveredByCategory['SERVICE'] || 0
