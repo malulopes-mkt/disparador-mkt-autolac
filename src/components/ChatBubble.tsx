@@ -6,6 +6,8 @@ interface ChatBubbleProps {
   status?: string
   timestamp: string
   templateName?: string | null
+  mediaType?: string | null
+  mediaId?: string | null
   classifyTipo?: string | null
   classifyTom?: string | null
   classifyPontos?: string | null
@@ -33,7 +35,57 @@ const tipoLabels: Record<string, string> = {
   outro: 'Outro',
 }
 
-export default function ChatBubble({ body, direction, status, timestamp, templateName, classifyTipo, classifyTom, classifyPontos, classifyProximo }: ChatBubbleProps) {
+function MediaContent({ mediaType, mediaId }: { mediaType: string; mediaId: string }) {
+  const src = `/api/media/${mediaId}`
+
+  if (mediaType === 'audio') {
+    return (
+      <audio controls preload="none" className="w-full max-w-[280px]" style={{ height: 40 }}>
+        <source src={src} />
+      </audio>
+    )
+  }
+
+  if (mediaType === 'image' || mediaType === 'sticker') {
+    return (
+      <img
+        src={src}
+        alt="Imagem"
+        className="rounded-lg max-w-[280px] max-h-[300px] object-contain"
+        loading="lazy"
+      />
+    )
+  }
+
+  if (mediaType === 'video') {
+    return (
+      <video controls preload="none" className="rounded-lg max-w-[280px] max-h-[300px]">
+        <source src={src} />
+      </video>
+    )
+  }
+
+  if (mediaType === 'document') {
+    return (
+      <a
+        href={src}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-blue-300 hover:text-blue-200 transition-colors"
+        style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.3)' }}
+      >
+        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+        Abrir documento
+      </a>
+    )
+  }
+
+  return null
+}
+
+export default function ChatBubble({ body, direction, status, timestamp, templateName, mediaType, mediaId, classifyTipo, classifyTom, classifyPontos, classifyProximo }: ChatBubbleProps) {
   const isOutbound = direction === 'outbound'
   const tz = 'America/Sao_Paulo'
   const time = new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tz })
@@ -61,7 +113,16 @@ export default function ChatBubble({ body, direction, status, timestamp, templat
               Template: {templateName}
             </p>
           )}
-          <p className="text-sm whitespace-pre-wrap break-words text-gray-100">{body}</p>
+          {mediaType && mediaId ? (
+            <>
+              <MediaContent mediaType={mediaType} mediaId={mediaId} />
+              {body && !body.startsWith('[') && (
+                <p className="text-sm whitespace-pre-wrap break-words text-gray-100 mt-1">{body}</p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm whitespace-pre-wrap break-words text-gray-100">{body}</p>
+          )}
           <div className={cn('flex items-center gap-1 mt-1', isOutbound ? 'justify-end' : 'justify-start')}>
             <span className="text-[10px] text-gray-500">{date} {time}</span>
             {isOutbound && <span className="text-[11px]"><StatusIcon status={status} /></span>}

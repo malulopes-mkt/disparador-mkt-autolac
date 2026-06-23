@@ -43,6 +43,8 @@ model Message {
   triggerId        String?
   trigger          Trigger? @relation(fields: [triggerId], references: [id])
   waMessageId      String?  @unique
+  mediaType        String?
+  mediaId          String?
   classifyTipo     String?
   classifyTom      String?
   classifyPontos   String?

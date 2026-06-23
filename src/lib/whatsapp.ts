@@ -254,6 +254,11 @@ export interface IncomingMessage {
   timestamp: string
   type: string
   text?: { body: string }
+  audio?: { id: string; mime_type?: string }
+  image?: { id: string; caption?: string; mime_type?: string }
+  video?: { id: string; caption?: string; mime_type?: string }
+  document?: { id: string; filename?: string; caption?: string; mime_type?: string }
+  sticker?: { id: string; mime_type?: string }
 }
 
 export interface StatusUpdate {
@@ -374,6 +379,34 @@ export async function getTemplateAnalytics(
       clicked: agg.clicked,
     })),
   }
+}
+
+export async function getMediaUrl(mediaId: string): Promise<{ url: string; mimeType: string } | null> {
+  const { accessToken } = await getConfig()
+  if (!accessToken) return null
+
+  const res = await fetch(`${GRAPH_URL}/${mediaId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  return { url: data.url, mimeType: data.mime_type || 'application/octet-stream' }
+}
+
+export async function downloadMedia(mediaId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
+  const meta = await getMediaUrl(mediaId)
+  if (!meta) return null
+
+  const { accessToken } = await getConfig()
+  if (!accessToken) return null
+
+  const res = await fetch(meta.url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) return null
+
+  const arrayBuffer = await res.arrayBuffer()
+  return { buffer: Buffer.from(arrayBuffer), mimeType: meta.mimeType }
 }
 
 export function parseWebhookPayload(body: Record<string, unknown>): {

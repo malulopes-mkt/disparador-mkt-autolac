@@ -16,6 +16,8 @@ interface Message {
   timestamp: string
   classifyTipo: string | null
   classifyTom: string | null
+  mediaType: string | null
+  mediaId: string | null
   classifyPontos: string | null
   classifyProximo: string | null
 }
@@ -69,6 +71,8 @@ export default function ChatPage({ params }: { params: { phone: string } }) {
       body: text,
       status: 'sending',
       timestamp: new Date().toISOString(),
+      mediaType: null,
+      mediaId: null,
       classifyTipo: null,
       classifyTom: null,
       classifyPontos: null,
@@ -136,6 +140,8 @@ export default function ChatPage({ params }: { params: { phone: string } }) {
                 status={msg.status}
                 timestamp={msg.timestamp}
                 templateName={msg.templateName}
+                mediaType={msg.mediaType}
+                mediaId={msg.mediaId}
                 classifyTipo={msg.classifyTipo}
                 classifyTom={msg.classifyTom}
                 classifyPontos={msg.classifyPontos}

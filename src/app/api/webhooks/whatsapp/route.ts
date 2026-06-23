@@ -53,7 +53,11 @@ export async function POST(req: NextRequest) {
       const phone = normalizePhone(msg.from)
       if (await isInternalPhone(phone)) continue
 
-      const text = msg.text?.body || `[${msg.type}]`
+      const mediaObj = msg.audio || msg.image || msg.video || msg.document || msg.sticker
+      const mediaType = mediaObj ? msg.type : null
+      const mediaId = mediaObj?.id || null
+      const caption = (msg.image?.caption || msg.video?.caption || msg.document?.caption)
+      const text = msg.text?.body || caption || `[${msg.type}]`
 
       let contactName: string | null = null
       let hubspotContactId: string | null = null
@@ -85,6 +89,8 @@ export async function POST(req: NextRequest) {
           status: 'received',
           hubspotContactId,
           waMessageId: msg.id,
+          mediaType,
+          mediaId,
           timestamp: new Date(Number(msg.timestamp) * 1000),
         },
       })
