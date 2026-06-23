@@ -145,7 +145,7 @@ export default function DashboardPage() {
         <>
           {/* Header com seletor de datas */}
           <div className="glass-card mb-6">
-            <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3" style={{ borderColor: 'var(--glass-border)' }}>
+            <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3 relative z-10" style={{ borderColor: 'var(--glass-border)' }}>
               <div>
                 <h2 className="font-semibold text-white text-sm flex items-center gap-2">
                   <MetaIcon />
@@ -660,7 +660,7 @@ function PricingSection({
 
   return (
     <div className="glass-card mb-8 relative">
-      <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3" style={{ borderColor: 'var(--glass-border)' }}>
+      <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3 relative z-10" style={{ borderColor: 'var(--glass-border)' }}>
         <div>
           <h2 className="font-semibold text-white text-sm flex items-center gap-2">
             <DollarIcon />
