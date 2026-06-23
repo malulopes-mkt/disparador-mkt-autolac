@@ -1,7 +1,13 @@
 export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.startsWith('55')) return '+' + digits
-  return '+55' + digits
+  let digits = phone.replace(/\D/g, '')
+  if (!digits.startsWith('55')) digits = '55' + digits
+  // Brazilian mobile numbers: 55 + 2-digit area code + 9-digit number = 13 digits
+  // Meta webhook sometimes sends 12 digits (missing the leading 9 of the mobile)
+  // Normalize 12-digit BR numbers to 13 by inserting the 9 after the area code
+  if (digits.length === 12) {
+    digits = digits.slice(0, 4) + '9' + digits.slice(4)
+  }
+  return '+' + digits
 }
 
 export function formatPhoneDisplay(phone: string): string {

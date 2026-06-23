@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { generatePhoneVariants } from '@/lib/utils'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -12,7 +13,10 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit') || '50')))
 
   const where: Record<string, unknown> = {}
-  if (phone) where.contactPhone = phone
+  if (phone) {
+    const variants = generatePhoneVariants(phone)
+    where.contactPhone = variants.length > 1 ? { in: variants } : phone
+  }
   if (direction) where.direction = direction
   if (from || to) {
     where.timestamp = {

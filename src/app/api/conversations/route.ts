@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { normalizePhone } from '@/lib/utils'
 
 export async function GET(req: NextRequest) {
   const search = req.nextUrl.searchParams.get('search') || ''
@@ -34,10 +35,11 @@ export async function GET(req: NextRequest) {
   >()
 
   for (const msg of allMessages) {
-    const existing = conversationMap.get(msg.contactPhone)
+    const normalized = normalizePhone(msg.contactPhone)
+    const existing = conversationMap.get(normalized)
     if (!existing) {
-      conversationMap.set(msg.contactPhone, {
-        phone: msg.contactPhone,
+      conversationMap.set(normalized, {
+        phone: normalized,
         name: msg.contactName,
         lastMessage: msg.body,
         lastTimestamp: msg.timestamp,
