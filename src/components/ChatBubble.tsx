@@ -40,9 +40,7 @@ function MediaContent({ mediaType, mediaId }: { mediaType: string; mediaId: stri
 
   if (mediaType === 'audio') {
     return (
-      <audio controls preload="none" className="w-full max-w-[280px]" style={{ height: 40 }}>
-        <source src={src} />
-      </audio>
+      <audio controls preload="metadata" src={src} className="w-full max-w-[280px]" style={{ height: 40 }} />
     )
   }
 

@@ -16,9 +16,12 @@ export async function GET(
     return NextResponse.json({ error: 'Media not found or expired' }, { status: 404 })
   }
 
-  return new NextResponse(new Uint8Array(result.buffer), {
+  const bytes = new Uint8Array(result.buffer)
+  return new NextResponse(bytes, {
     headers: {
       'Content-Type': result.mimeType,
+      'Content-Length': String(bytes.byteLength),
+      'Accept-Ranges': 'bytes',
       'Cache-Control': 'private, max-age=86400',
     },
   })
