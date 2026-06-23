@@ -60,6 +60,9 @@ export default function GatilhosPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Trigger | null>(null)
+  const [hubspotLists, setHubspotLists] = useState<HubSpotList[]>([])
+  const [syncingLists, setSyncingLists] = useState(false)
+  const [syncResult, setSyncResult] = useState<{ ok: boolean; count: number; error?: string } | null>(null)
 
   const load = useCallback(() => {
     Promise.all([
@@ -70,6 +73,25 @@ export default function GatilhosPage() {
       setTemplates(tmpl)
       setLoading(false)
     })
+  }, [])
+
+  const syncHubspotLists = useCallback(async () => {
+    setSyncingLists(true)
+    setSyncResult(null)
+    try {
+      const res = await fetch('/api/hubspot/lists')
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setHubspotLists(data)
+        setSyncResult({ ok: true, count: data.length })
+      } else {
+        setSyncResult({ ok: false, count: 0, error: data.error || 'Erro ao carregar listas' })
+      }
+    } catch {
+      setSyncResult({ ok: false, count: 0, error: 'Erro de conexao com o servidor' })
+    } finally {
+      setSyncingLists(false)
+    }
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -123,13 +145,79 @@ export default function GatilhosPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-2">Configure disparos por evento ou campanha com segmentos do HubSpot</p>
         </div>
-        <button
-          onClick={() => { setEditing(null); setShowForm(true) }}
-          className="btn-primary-wmi px-5 py-2.5 text-sm"
-        >
-          + Novo Gatilho
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={syncHubspotLists}
+            disabled={syncingLists}
+            className="btn-ghost-wmi px-4 py-2.5 text-sm flex items-center gap-2"
+          >
+            {syncingLists ? (
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            )}
+            Sincronizar com o HubSpot
+          </button>
+          <button
+            onClick={() => { setEditing(null); setShowForm(true) }}
+            className="btn-primary-wmi px-5 py-2.5 text-sm"
+          >
+            + Novo Gatilho
+          </button>
+        </div>
       </div>
+
+      {syncResult && (
+        <div className={`mb-6 rounded-lg p-4 text-sm flex items-center justify-between ${syncResult.ok ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+          {syncResult.ok ? (
+            <div className="flex items-center gap-2 text-emerald-400">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              {syncResult.count} segmentos sincronizados do HubSpot
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-red-400">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              {syncResult.error}
+            </div>
+          )}
+          <button onClick={() => setSyncResult(null)} className="text-gray-500 hover:text-gray-300 text-lg">&times;</button>
+        </div>
+      )}
+
+      {hubspotLists.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <svg className="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            Segmentos HubSpot ({hubspotLists.length})
+          </h2>
+          <div className="glass-card overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Nome</th>
+                  <th className="text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Tipo</th>
+                  <th className="text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Contatos</th>
+                  <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {hubspotLists.map((l, i) => (
+                  <tr key={l.listId} className="hover:bg-white/[0.02] transition-colors" style={i < hubspotLists.length - 1 ? { borderBottom: '1px solid var(--glass-border)' } : {}}>
+                    <td className="px-5 py-2.5 text-sm text-gray-200">{l.name}</td>
+                    <td className="px-5 py-2.5 text-center">
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${l.listType === 'DYNAMIC' ? 'text-blue-400' : 'text-gray-400'}`}>
+                        {l.listType === 'DYNAMIC' ? 'Dinamica' : 'Estatica'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-2.5 text-center text-sm text-gray-400">{l.size.toLocaleString('pt-BR')}</td>
+                    <td className="px-5 py-2.5 text-right text-xs text-gray-600 font-mono">{l.listId}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {campaigns.length > 0 && (
         <div className="mb-8">
@@ -229,6 +317,7 @@ export default function GatilhosPage() {
         <TriggerFormModal
           trigger={editing}
           templates={templates}
+          hubspotLists={hubspotLists}
           onClose={() => { setShowForm(false); setEditing(null) }}
           onSave={saveTrigger}
         />
@@ -333,11 +422,13 @@ function CampaignCard({
 function TriggerFormModal({
   trigger,
   templates,
+  hubspotLists: parentLists,
   onClose,
   onSave,
 }: {
   trigger: Trigger | null
   templates: Template[]
+  hubspotLists: HubSpotList[]
   onClose: () => void
   onSave: (data: Record<string, unknown>) => void
 }) {
@@ -358,7 +449,7 @@ function TriggerFormModal({
   })
   const [saving, setSaving] = useState(false)
 
-  const [lists, setLists] = useState<HubSpotList[]>([])
+  const [lists, setLists] = useState<HubSpotList[]>(parentLists)
   const [loadingLists, setLoadingLists] = useState(false)
   const [listsError, setListsError] = useState<string | null>(null)
 
