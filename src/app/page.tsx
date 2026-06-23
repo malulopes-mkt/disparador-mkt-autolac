@@ -23,6 +23,15 @@ interface DashboardData {
   }[]
 }
 
+interface PricingData {
+  period: { start: string; end: string }
+  summary: { sent: number; delivered: number; received: number }
+  deliveredBreakdown: { category: string; delivered: number }[]
+  freeMessages: { total: number; breakdown: { category: string; count: number }[] }
+  paidMessages: { total: number; breakdown: { category: string; delivered: number }[] }
+  cost: { total: number; breakdown: { category: string; cost: number }[] }
+}
+
 interface MetaInsights {
   period: { start: string; end: string; days: number }
   totals: {
@@ -62,6 +71,8 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<MetaInsights | null>(null)
   const [loading, setLoading] = useState(true)
   const [insightsLoading, setInsightsLoading] = useState(false)
+  const [pricing, setPricing] = useState<PricingData | null>(null)
+  const [pricingLoading, setPricingLoading] = useState(false)
 
   const now = new Date()
   const thirtyAgo = new Date()
@@ -86,9 +97,19 @@ export default function DashboardPage() {
       .finally(() => setInsightsLoading(false))
   }, [])
 
+  const fetchPricing = useCallback((start: Date, end: Date) => {
+    setPricingLoading(true)
+    fetch(`/api/meta/pricing?start=${toISODate(start)}&end=${toISODate(end)}`)
+      .then(r => r.json())
+      .then(setPricing)
+      .catch(() => setPricing(null))
+      .finally(() => setPricingLoading(false))
+  }, [])
+
   useEffect(() => {
     fetchInsights(startDate, endDate)
-  }, [startDate, endDate, fetchInsights])
+    fetchPricing(startDate, endDate)
+  }, [startDate, endDate, fetchInsights, fetchPricing])
 
   function applyPreset(days: number) {
     const end = new Date()
@@ -265,6 +286,11 @@ export default function DashboardPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Precos das mensagens */}
+      {pricing && (
+        <PricingSection pricing={pricing} loading={pricingLoading} />
       )}
 
       {/* Ultimas mensagens */}
@@ -578,6 +604,125 @@ function PageLoader() {
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
+  )
+}
+
+/* ==================== Pricing Section ==================== */
+
+const CATEGORY_LABELS: Record<string, string> = {
+  'MARKETING': 'Marketing',
+  'MARKETING-LITE': 'Marketing - Lite',
+  'UTILITY': 'Utilidade',
+  'AUTHENTICATION': 'Autenticacao',
+  'AUTHENTICATION-INTERNATIONAL': 'Autenticacao - Internacional',
+  'SERVICE': 'Servico',
+}
+
+function formatCurrency(value: number): string {
+  return `$${value.toFixed(2).replace('.', ',')}`
+}
+
+function PricingSection({ pricing, loading }: { pricing: PricingData; loading: boolean }) {
+  return (
+    <div className="glass-card mb-8 relative">
+      <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--glass-border)' }}>
+        <div>
+          <h2 className="font-semibold text-white text-sm flex items-center gap-2">
+            <DollarIcon />
+            Precos das Mensagens
+          </h2>
+          <p className="text-[10px] text-gray-500 mt-0.5">Estimativa baseada nas tarifas Meta por categoria</p>
+        </div>
+      </div>
+
+      {/* Cards de resumo */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-x border-b" style={{ borderColor: 'var(--glass-border)' }}>
+        <PricingSummaryCell label="Todas as mensagens">
+          <PricingRow label="Mensagens enviadas" value={pricing.summary.sent} />
+          <PricingRow label="Mensagens entregues" value={pricing.summary.delivered} />
+          <PricingRow label="Mensagens recebidas" value={pricing.summary.received} />
+        </PricingSummaryCell>
+
+        <PricingSummaryCell label="Mensagens entregues" highlight={pricing.summary.delivered}>
+          {pricing.deliveredBreakdown.map(d => (
+            <PricingRow key={d.category} label={CATEGORY_LABELS[d.category] || d.category} value={d.delivered} />
+          ))}
+        </PricingSummaryCell>
+
+        <PricingSummaryCell label="Mensagens gratuitas entregues" highlight={pricing.freeMessages.total}>
+          {pricing.freeMessages.breakdown.map(f => (
+            <PricingRow key={f.category} label={f.category} value={f.count} />
+          ))}
+        </PricingSummaryCell>
+      </div>
+
+      {/* Cards de pagamento e custo */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-x" style={{ borderColor: 'var(--glass-border)' }}>
+        <PricingSummaryCell label="Mensagens pagas entregues" highlight={pricing.paidMessages.total}>
+          {pricing.paidMessages.breakdown.map(p => (
+            <PricingRow key={p.category} label={CATEGORY_LABELS[p.category] || p.category} value={p.delivered} />
+          ))}
+        </PricingSummaryCell>
+
+        <PricingSummaryCell label="Cobranca total aproximada" highlightCurrency={pricing.cost.total}>
+          {pricing.cost.breakdown.map(c => (
+            <PricingRow key={c.category} label={CATEGORY_LABELS[c.category] || c.category} currency={c.cost} />
+          ))}
+        </PricingSummaryCell>
+      </div>
+
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PricingSummaryCell({
+  label,
+  highlight,
+  highlightCurrency,
+  children,
+}: {
+  label: string
+  highlight?: number
+  highlightCurrency?: number
+  children: React.ReactNode
+}) {
+  return (
+    <div className="px-5 py-4" style={{ borderColor: 'var(--glass-border)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-medium text-gray-300">{label}</h3>
+        {highlight !== undefined && (
+          <span className="text-lg font-bold text-gradient">{highlight.toLocaleString('pt-BR')}</span>
+        )}
+        {highlightCurrency !== undefined && (
+          <span className="text-lg font-bold text-emerald-400">{formatCurrency(highlightCurrency)}</span>
+        )}
+      </div>
+      <div className="space-y-1.5">{children}</div>
+    </div>
+  )
+}
+
+function PricingRow({ label, value, currency }: { label: string; value?: number; currency?: number }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-[11px] text-gray-500">{label}</span>
+      <span className="text-[11px] text-gray-300 font-medium">
+        {currency !== undefined ? formatCurrency(currency) : (value ?? 0).toLocaleString('pt-BR')}
+      </span>
+    </div>
+  )
+}
+
+function DollarIcon() {
+  return (
+    <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+    </svg>
   )
 }
 
