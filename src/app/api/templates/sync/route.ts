@@ -13,11 +13,6 @@ export async function POST() {
       const variables = extractTemplateVariables(bodyText)
       const headerMediaUrl = extractHeaderMediaUrl(t.components)
 
-      const existing = await prisma.template.findUnique({ where: { metaTemplateId: t.id } })
-
-      const keepExistingMedia = existing?.headerMediaUrl?.startsWith('mid:') ?? false
-      const resolvedMediaUrl = keepExistingMedia ? existing!.headerMediaUrl : headerMediaUrl
-
       const record = await prisma.template.upsert({
         where: { metaTemplateId: t.id },
         update: {
@@ -28,7 +23,7 @@ export async function POST() {
           bodyText,
           variables: JSON.stringify(variables),
           componentsJson: JSON.stringify(t.components),
-          headerMediaUrl: resolvedMediaUrl,
+          headerMediaUrl,
           lastSyncedAt: new Date(),
         },
         create: {
