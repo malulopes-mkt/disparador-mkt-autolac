@@ -120,8 +120,8 @@ export default function GatilhosPage() {
 
   async function resumeCampaign(id: string) {
     if (!confirm('Retomar envio da campanha? Contatos já enviados serão pulados.')) return
-    fetch(`/api/campaigns/${id}/execute`, { method: 'POST' })
-    setTimeout(load, 1000)
+    fetch(`/api/triggers/${id}/resume`, { method: 'POST' })
+    setTimeout(load, 2000)
   }
 
   async function saveTrigger(data: Record<string, unknown>) {

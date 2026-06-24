@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic'
+export const maxDuration = 300
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { sendTemplate, buildHeaderComponent, TemplateComponent } from '@/lib/whatsapp'
@@ -8,16 +10,6 @@ import { createCommunicationNote, getContactDeals } from '@/lib/hubspot'
 
 const HUBSPOT_API = 'https://api.hubapi.com'
 const DELAY_BETWEEN_MESSAGES_MS = 1500
-
-async function verifyAuth(req: NextRequest): Promise<boolean> {
-  if (req.headers.get('x-user-email') || req.headers.get('x-auth-request-email')) return true
-
-  const tokenHeader = req.headers.get('x-webhook-token')
-  if (!tokenHeader) return false
-  const expectedToken = await getSetting('N8N_WEBHOOK_TOKEN')
-  if (!expectedToken) return false
-  return tokenHeader === expectedToken
-}
 
 async function fetchListContacts(listId: string, token: string) {
   const contacts: { id: string; phone: string; name: string | null }[] = []
@@ -68,13 +60,8 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-
-  const isN8N = await verifyAuth(req)
-  if (!isN8N) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   const trigger = await prisma.trigger.findUnique({ where: { id } })
   if (!trigger) {
@@ -82,10 +69,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   if (!trigger.segmentId) {
-    return NextResponse.json({ error: 'No segment configured for this campaign' }, { status: 400 })
+    return NextResponse.json({ error: 'No segment configured' }, { status: 400 })
   }
 
-  const isResuming = trigger.status === 'running'
+  if (trigger.status !== 'running' && trigger.status !== 'scheduled') {
+    return NextResponse.json({ error: 'Campaign is not resumable' }, { status: 400 })
+  }
 
   const token = await getSetting('HUBSPOT_ACCESS_TOKEN')
   if (!token) {
@@ -95,26 +84,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const contacts = await fetchListContacts(trigger.segmentId, token)
 
   const alreadySentPhones = new Set<string>()
-  if (isResuming) {
-    const alreadySent = await prisma.message.findMany({
-      where: { triggerId: id, direction: 'outbound' },
-      select: { contactPhone: true },
-    })
-    for (const m of alreadySent) {
-      alreadySentPhones.add(m.contactPhone)
-    }
+  const alreadySent = await prisma.message.findMany({
+    where: { triggerId: id, direction: 'outbound' },
+    select: { contactPhone: true },
+  })
+  for (const m of alreadySent) {
+    alreadySentPhones.add(m.contactPhone)
   }
 
-  const previousSent = isResuming ? (trigger.sentCount || 0) : 0
-  const previousFailed = isResuming ? (trigger.failedCount || 0) : 0
+  const previousSent = trigger.sentCount || 0
+  const previousFailed = trigger.failedCount || 0
 
   await prisma.trigger.update({
     where: { id },
-    data: {
-      status: 'running',
-      totalContacts: contacts.length,
-      ...(!isResuming && { sentCount: 0, failedCount: 0 }),
-    },
+    data: { status: 'running', totalContacts: contacts.length },
   })
 
   const dbTemplate = await prisma.template.findFirst({
@@ -201,13 +184,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     data: { status: 'completed', sentCount: sent, failedCount: failed },
   })
 
-  return NextResponse.json({
-    ok: true,
-    campaign: trigger.name,
-    totalContacts: contacts.length,
-    sent,
-    failed,
-    skipped,
-    resumed: isResuming,
-  })
+  return NextResponse.json({ ok: true, sent, failed, skipped, totalContacts: contacts.length })
 }
