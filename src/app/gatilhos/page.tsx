@@ -118,6 +118,12 @@ export default function GatilhosPage() {
     load()
   }
 
+  async function resumeCampaign(id: string) {
+    if (!confirm('Retomar envio da campanha? Contatos já enviados serão pulados.')) return
+    fetch(`/api/campaigns/${id}/execute`, { method: 'POST' })
+    setTimeout(load, 1000)
+  }
+
   async function saveTrigger(data: Record<string, unknown>) {
     const url = editing ? `/api/triggers/${editing.id}` : '/api/triggers'
     const method = editing ? 'PUT' : 'POST'
@@ -233,6 +239,7 @@ export default function GatilhosPage() {
                 onEdit={() => { setEditing(t); setShowForm(true) }}
                 onDelete={() => deleteTrigger(t.id)}
                 onToggle={() => toggleActive(t.id, t.active)}
+                onResume={() => resumeCampaign(t.id)}
               />
             ))}
           </div>
@@ -331,11 +338,13 @@ function CampaignCard({
   onEdit,
   onDelete,
   onToggle,
+  onResume,
 }: {
   trigger: Trigger
   onEdit: () => void
   onDelete: () => void
   onToggle: () => void
+  onResume: () => void
 }) {
   const statusInfo = STATUS_LABELS[trigger.status] || STATUS_LABELS.active
   const progress = trigger.totalContacts > 0
@@ -364,6 +373,9 @@ function CampaignCard({
           >
             <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${trigger.active ? 'left-5' : 'left-0.5'}`} />
           </button>
+          {trigger.status === 'running' && trigger.sentCount < trigger.totalContacts && (
+            <button onClick={onResume} className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2 py-1 rounded" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>Retomar</button>
+          )}
           <button onClick={onEdit} className="text-xs text-blue-400 hover:text-blue-300 font-medium">Editar</button>
           <button onClick={onDelete} className="btn-danger-wmi text-xs">Excluir</button>
         </div>

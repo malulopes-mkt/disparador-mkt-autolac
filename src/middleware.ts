@@ -16,10 +16,10 @@ export function middleware(req: NextRequest) {
     if (action === 'pending') {
       return NextResponse.rewrite(new URL('/api/webhooks/n8n/pending', req.url))
     }
-    if (action === 'execute') {
+    if (action === 'execute' || action === 'resume') {
       const id = searchParams.get('id')
       if (id) {
-        return NextResponse.rewrite(new URL(`/api/webhooks/n8n/${id}/execute`, req.url))
+        return NextResponse.rewrite(new URL(`/api/campaigns/${id}/execute`, req.url))
       }
     }
   }

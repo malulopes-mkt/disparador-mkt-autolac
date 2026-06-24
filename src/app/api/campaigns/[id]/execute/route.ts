@@ -10,6 +10,9 @@ const HUBSPOT_API = 'https://api.hubapi.com'
 const DELAY_BETWEEN_MESSAGES_MS = 1500
 
 async function verifyAuth(req: NextRequest): Promise<boolean> {
+  const ssoEmail = req.headers.get('x-user-email')
+  if (ssoEmail) return true
+
   const tokenHeader = req.headers.get('x-webhook-token')
   if (!tokenHeader) return false
   const expectedToken = await getSetting('N8N_WEBHOOK_TOKEN')
