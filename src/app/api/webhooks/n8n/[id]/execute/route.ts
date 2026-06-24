@@ -70,9 +70,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'No segment configured for this campaign' }, { status: 400 })
   }
 
-  if (trigger.status === 'running') {
-    return NextResponse.json({ error: 'Campaign is already running' }, { status: 409 })
-  }
+  const isResuming = trigger.status === 'running'
 
   const token = await getSetting('HUBSPOT_ACCESS_TOKEN')
   if (!token) {
@@ -81,9 +79,27 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   const contacts = await fetchListContacts(trigger.segmentId, token)
 
+  const alreadySentPhones = new Set<string>()
+  if (isResuming) {
+    const alreadySent = await prisma.message.findMany({
+      where: { triggerId: id, direction: 'outbound' },
+      select: { contactPhone: true },
+    })
+    for (const m of alreadySent) {
+      alreadySentPhones.add(m.contactPhone)
+    }
+  }
+
+  const previousSent = isResuming ? (trigger.sentCount || 0) : 0
+  const previousFailed = isResuming ? (trigger.failedCount || 0) : 0
+
   await prisma.trigger.update({
     where: { id },
-    data: { status: 'running', totalContacts: contacts.length, sentCount: 0, failedCount: 0 },
+    data: {
+      status: 'running',
+      totalContacts: contacts.length,
+      ...(!isResuming && { sentCount: 0, failedCount: 0 }),
+    },
   })
 
   const dbTemplate = await prisma.template.findFirst({
@@ -98,14 +114,20 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     if (headerComp) components.push(headerComp)
   }
 
-  let sent = 0
-  let failed = 0
+  let sent = previousSent
+  let failed = previousFailed
+  let skipped = 0
 
   for (const contact of contacts) {
     try {
       const normalizedPhone = normalizePhone(contact.phone)
 
       if (await isInternalPhone(normalizedPhone)) continue
+
+      if (alreadySentPhones.has(normalizedPhone)) {
+        skipped++
+        continue
+      }
 
       const result = await sendTemplate(normalizedPhone, trigger.templateName, templateLanguage, components.length > 0 ? components : undefined)
       const waMessageId = result.messages?.[0]?.id || null
@@ -170,5 +192,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     totalContacts: contacts.length,
     sent,
     failed,
+    skipped,
+    resumed: isResuming,
   })
 }
