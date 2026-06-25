@@ -157,7 +157,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       })
 
       if (contact.id) {
-        const noteBody = `<p><strong>WhatsApp Campanha:</strong> ${trigger.name}</p><p><strong>Template:</strong> ${trigger.templateName}</p><p>Para: ${normalizedPhone}</p>`
+        const noteBody = `<p><strong>WhatsApp Campanha:</strong> ${trigger.name}</p><p><strong>Template:</strong> ${trigger.templateName}</p><p>Para: ${normalizedPhone}</p><hr/><p>${templateBody}</p>`
         createCommunicationNote(contact.id, noteBody).catch(() => {})
       }
 

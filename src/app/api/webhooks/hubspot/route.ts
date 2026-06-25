@@ -258,8 +258,9 @@ export async function POST(req: NextRequest) {
     })
 
     // --- Create HubSpot communication note ---
+    const bodyText = templateBody || `[Template: ${templateName}]`
     if (messageStatus === 'sent' && hubspotContactId) {
-      const noteBody = `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p>`
+      const noteBody = `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p><hr/><p>${bodyText}</p>`
       createCommunicationNote(hubspotContactId, noteBody).catch(console.error)
     } else if (!hubspotContactId && messageStatus === 'sent') {
       const contact = await findOrCreateContact(normalizedPhone).catch(() => null)
@@ -273,8 +274,8 @@ export async function POST(req: NextRequest) {
           },
         })
         const noteBody = isPlaceholder
-          ? `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p><p><em>Contato criado automaticamente — revisar dados.</em></p>`
-          : `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p>`
+          ? `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p><p><em>Contato criado automaticamente — revisar dados.</em></p><hr/><p>${bodyText}</p>`
+          : `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p><hr/><p>${bodyText}</p>`
         createCommunicationNote(contact.id, noteBody).catch(console.error)
       }
     }
