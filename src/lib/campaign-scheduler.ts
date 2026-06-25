@@ -2,7 +2,7 @@ import { prisma } from './db'
 import { sendTemplate, buildHeaderComponent, TemplateComponent } from './whatsapp'
 import { normalizePhone, isInternalPhone } from './utils'
 import { getSetting } from './settings'
-import { createCommunicationNote, getContactDeals } from './hubspot'
+import { createCommunicationNote } from './hubspot'
 
 const HUBSPOT_API = 'https://api.hubapi.com'
 const DELAY_BETWEEN_MESSAGES_MS = 1500
@@ -116,9 +116,8 @@ async function executeCampaign(triggerId: string) {
       })
 
       if (contact.id) {
-        const dealId = await getContactDeals(contact.id).catch(() => null)
         const noteBody = `<p><strong>WhatsApp Campanha:</strong> ${trigger.name}</p><p><strong>Template:</strong> ${trigger.templateName}</p><p>Para: ${normalizedPhone}</p>`
-        createCommunicationNote(contact.id, noteBody, dealId || undefined).catch(() => {})
+        createCommunicationNote(contact.id, noteBody).catch(() => {})
       }
 
       sent++

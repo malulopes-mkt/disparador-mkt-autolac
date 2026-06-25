@@ -50,8 +50,7 @@ export async function searchContactByPhone(phone: string): Promise<HubSpotContac
 
 export async function createCommunicationNote(
   contactId: string,
-  body: string,
-  dealId?: string
+  body: string
 ): Promise<string | null> {
   const associations: Record<string, unknown>[] = [
     {
@@ -59,13 +58,6 @@ export async function createCommunicationNote(
       types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 81 }],
     },
   ]
-
-  if (dealId) {
-    associations.push({
-      to: { id: dealId },
-      types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 85 }],
-    })
-  }
 
   const res = await fetch(`${HUBSPOT_API}/crm/v3/objects/communications`, {
     method: 'POST',

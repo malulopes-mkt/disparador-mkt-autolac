@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { prisma } from '@/lib/db'
 import { sendTemplate, buildHeaderComponent, TemplateComponent } from '@/lib/whatsapp'
-import { findOrCreateContact, createCommunicationNote, getContactDeals, getContactById } from '@/lib/hubspot'
+import { findOrCreateContact, createCommunicationNote, getContactById } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { getSetting } from '@/lib/settings'
 
@@ -259,9 +259,8 @@ export async function POST(req: NextRequest) {
 
     // --- Create HubSpot communication note ---
     if (messageStatus === 'sent' && hubspotContactId) {
-      const dealId = await getContactDeals(hubspotContactId).catch(() => null)
       const noteBody = `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p>`
-      createCommunicationNote(hubspotContactId, noteBody, dealId || undefined).catch(console.error)
+      createCommunicationNote(hubspotContactId, noteBody).catch(console.error)
     } else if (!hubspotContactId && messageStatus === 'sent') {
       const contact = await findOrCreateContact(normalizedPhone).catch(() => null)
       if (contact) {
@@ -273,11 +272,10 @@ export async function POST(req: NextRequest) {
             contactName: isPlaceholder ? contact.properties.firstname : (resolvedName || [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' ') || null),
           },
         })
-        const dealId = await getContactDeals(contact.id).catch(() => null)
         const noteBody = isPlaceholder
           ? `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p><p><em>Contato criado automaticamente — revisar dados.</em></p>`
           : `<p><strong>WhatsApp Template Enviado:</strong> ${templateName}</p><p>Para: ${normalizedPhone}</p>`
-        createCommunicationNote(contact.id, noteBody, dealId || undefined).catch(console.error)
+        createCommunicationNote(contact.id, noteBody).catch(console.error)
       }
     }
 
