@@ -76,8 +76,18 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Campaign is not resumable' }, { status: 400 })
   }
 
+  // Atomic lock: only one execution at a time via 'sending' status
+  const locked = await prisma.$executeRawUnsafe(
+    `UPDATE "Trigger" SET status = 'sending', "updatedAt" = datetime('now') WHERE id = ? AND status IN ('running', 'scheduled')`,
+    id
+  ) as number
+  if (locked === 0) {
+    return NextResponse.json({ error: 'Campaign is already being sent by another process' }, { status: 409 })
+  }
+
   const token = await getSetting('HUBSPOT_ACCESS_TOKEN')
   if (!token) {
+    await prisma.trigger.update({ where: { id }, data: { status: 'running' } })
     return NextResponse.json({ error: 'HUBSPOT_ACCESS_TOKEN not configured' }, { status: 500 })
   }
 
@@ -85,7 +95,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   const alreadySentPhones = new Set<string>()
   const alreadySent = await prisma.message.findMany({
-    where: { triggerId: id, direction: 'outbound' },
+    where: { triggerId: id, direction: 'outbound', status: 'sent' },
     select: { contactPhone: true },
   })
   for (const m of alreadySent) {
@@ -97,7 +107,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   await prisma.trigger.update({
     where: { id },
-    data: { status: 'running', totalContacts: contacts.length },
+    data: { status: 'sending', totalContacts: contacts.length },
   })
 
   const dbTemplate = await prisma.template.findFirst({

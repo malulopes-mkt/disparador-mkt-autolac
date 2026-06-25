@@ -50,6 +50,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'Rascunho', color: 'text-gray-400' },
   scheduled: { label: 'Agendado', color: 'text-amber-400' },
   running: { label: 'Enviando...', color: 'text-blue-400' },
+  sending: { label: 'Enviando...', color: 'text-blue-400' },
   completed: { label: 'Concluido', color: 'text-cyan-400' },
   failed: { label: 'Falhou', color: 'text-red-400' },
 }
@@ -97,7 +98,7 @@ export default function GatilhosPage() {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    const hasRunning = triggers.some(t => t.status === 'running')
+    const hasRunning = triggers.some(t => t.status === 'running' || t.status === 'sending')
     if (!hasRunning) return
     const interval = setInterval(load, 5000)
     return () => clearInterval(interval)
@@ -118,10 +119,22 @@ export default function GatilhosPage() {
     load()
   }
 
+  const [resumingId, setResumingId] = useState<string | null>(null)
+
   async function resumeCampaign(id: string) {
-    if (!confirm('Retomar envio da campanha? Contatos já enviados serão pulados.')) return
-    fetch(`/api/triggers/${id}/resume`, { method: 'POST' })
-    setTimeout(load, 2000)
+    setResumingId(id)
+    try {
+      const res = await fetch(`/api/triggers/${id}/resume`, { method: 'POST' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        alert(data.error || 'Erro ao retomar campanha')
+      }
+    } catch {
+      alert('Erro de conexao ao retomar campanha')
+    } finally {
+      setResumingId(null)
+      load()
+    }
   }
 
   async function saveTrigger(data: Record<string, unknown>) {
@@ -236,6 +249,7 @@ export default function GatilhosPage() {
               <CampaignCard
                 key={t.id}
                 trigger={t}
+                resuming={resumingId === t.id}
                 onEdit={() => { setEditing(t); setShowForm(true) }}
                 onDelete={() => deleteTrigger(t.id)}
                 onToggle={() => toggleActive(t.id, t.active)}
@@ -335,12 +349,14 @@ export default function GatilhosPage() {
 
 function CampaignCard({
   trigger,
+  resuming,
   onEdit,
   onDelete,
   onToggle,
   onResume,
 }: {
   trigger: Trigger
+  resuming: boolean
   onEdit: () => void
   onDelete: () => void
   onToggle: () => void
@@ -374,7 +390,9 @@ function CampaignCard({
             <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${trigger.active ? 'left-5' : 'left-0.5'}`} />
           </button>
           {trigger.status === 'running' && trigger.sentCount < trigger.totalContacts && (
-            <button onClick={onResume} className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2 py-1 rounded" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>Retomar</button>
+            <button onClick={onResume} disabled={resuming} className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>
+              {resuming ? 'Retomando...' : 'Retomar'}
+            </button>
           )}
           <button onClick={onEdit} className="text-xs text-blue-400 hover:text-blue-300 font-medium">Editar</button>
           <button onClick={onDelete} className="btn-danger-wmi text-xs">Excluir</button>
@@ -403,7 +421,7 @@ function CampaignCard({
         </div>
       </div>
 
-      {(trigger.status === 'running' || trigger.status === 'completed') && trigger.totalContacts > 0 && (
+      {(trigger.status === 'running' || trigger.status === 'sending' || trigger.status === 'completed') && trigger.totalContacts > 0 && (
         <div className="mt-4">
           <div className="flex justify-between text-[10px] text-gray-500 mb-1">
             <span>{trigger.sentCount} enviadas / {trigger.failedCount} falhas</span>
