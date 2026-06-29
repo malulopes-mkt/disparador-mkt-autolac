@@ -12,22 +12,16 @@ export async function GET() {
 
   try {
     const lists: { listId: string; name: string; listType: string; size: number }[] = []
-    let offset = 0
-    let hasMore = true
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
 
-    while (hasMore) {
-      const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/search`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          count: 100,
-          offset,
-          query: '',
-        }),
-      })
+    let after: string | undefined
+
+    while (true) {
+      const url = `${HUBSPOT_API}/crm/v3/lists?count=250${after ? `&after=${after}` : ''}`
+      const res = await fetch(url, { headers })
 
       if (!res.ok) {
         const err = await res.text()
@@ -44,9 +38,8 @@ export async function GET() {
         })
       }
 
-      hasMore = data.hasMore === true
-      offset = data.offset || offset + 100
-      if (!(data.lists?.length > 0)) hasMore = false
+      if (!data.paging?.next?.after) break
+      after = data.paging.next.after
     }
 
     lists.sort((a, b) => a.name.localeCompare(b.name))
