@@ -1,0 +1,5 @@
+Dockerfile
+.dockerignore
+*.cjs
+_*.cjs
+assets/

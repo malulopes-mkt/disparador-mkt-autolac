@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fábrica de Criativos — WMI Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-bg-deep:#020818;--color-bg-elevated:#111D40;
+  --color-blue-700:#1D4ED8;--color-blue-600:#2563EB;--color-blue-500:#3B82F6;--color-blue-400:#60A5FA;--color-blue-300:#93C5FD;
+  --color-cyan-500:#06B6D4;--color-cyan-glow:#00D4FF;
+  --color-white:#fff;--color-gray-300:#CBD5E1;--color-gray-400:#94A3B8;--color-gray-500:#64748B;--color-gray-600:#475569;
+  --color-success:#10B981;--color-warning:#F59E0B;--color-error:#EF4444;
+  --gradient-brand:linear-gradient(135deg,#2563EB 0%,#06B6D4 100%);
+  --gradient-text:linear-gradient(90deg,#60A5FA 0%,#00D4FF 100%);
+  --glass-bg:rgba(255,255,255,0.04);--glass-bg-hover:rgba(255,255,255,0.07);--glass-bg-active:rgba(37,99,235,0.15);
+  --glass-border:rgba(255,255,255,0.08);--glass-border-hover:rgba(96,165,250,0.3);--glass-border-brand:rgba(37,99,235,0.4);
+  --glass-blur:blur(20px);
+  --shadow-md:0 4px 20px rgba(0,0,0,0.4);--shadow-blue-sm:0 0 15px rgba(37,99,235,0.2);--shadow-blue-md:0 0 30px rgba(37,99,235,0.3);
+  --shadow-button:0 4px 20px rgba(37,99,235,0.4);--shadow-button-hover:0 8px 30px rgba(37,99,235,0.6);
+  --font-family:'Poppins',sans-serif;
+  --fs-xs:0.625rem;--fs-sm:0.75rem;--fs-base:0.875rem;--fs-md:1rem;--fs-lg:1.125rem;--fs-2xl:1.5rem;--fs-4xl:2.25rem;
+  --s1:0.25rem;--s2:0.5rem;--s3:0.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;--s8:2rem;--s10:2.5rem;--s12:3rem;--s16:4rem;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;--r-full:9999px;
+  --t-base:250ms ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-family);background:var(--color-bg-deep);color:var(--color-white);line-height:1.5;font-size:var(--fs-base);overflow-x:hidden;min-height:100vh}
+.aurora-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aurora-bg::before{content:'';position:absolute;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,0.12) 0%,transparent 70%);top:-200px;left:-200px;animation:a1 20s ease-in-out infinite}
+.aurora-bg::after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%);bottom:-100px;right:-100px;animation:a2 25s ease-in-out infinite}
+@keyframes a1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(100px,80px) scale(1.1)}66%{transform:translate(-60px,120px) scale(0.9)}}
+@keyframes a2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-80px,-60px) scale(1.15)}66%{transform:translate(60px,-100px) scale(0.95)}}
+.container{max-width:1180px;margin:0 auto;padding:0 var(--s6);position:relative;z-index:1}
+.text-gradient{background:var(--gradient-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* HERO */
+header.hero{padding:var(--s16) 0 var(--s10)}
+.hero-tag{display:inline-flex;align-items:center;gap:var(--s2);background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);border-radius:var(--r-full);padding:var(--s1) var(--s4);font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--color-blue-300);margin-bottom:var(--s5)}
+.hero-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--color-cyan-glow);box-shadow:0 0 8px var(--color-cyan-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1{font-size:clamp(2rem,4vw,3.25rem);font-weight:800;line-height:1.15;letter-spacing:-.02em;margin-bottom:var(--s4)}
+.subtitle{font-size:var(--fs-lg);color:var(--color-gray-400);max-width:640px;line-height:1.7}
+
+/* CARDS / GLASS */
+.card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:var(--r-xl);padding:var(--s6);transition:all var(--t-base)}
+.panel{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:var(--r-xl);padding:var(--s6)}
+
+/* INPUTS */
+.input-label{display:block;font-size:var(--fs-sm);font-weight:500;color:var(--color-gray-300);margin-bottom:var(--s2)}
+.input,textarea.input,select.input{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:var(--r-lg);padding:var(--s3) var(--s4);font-family:var(--font-family);font-size:var(--fs-base);color:var(--color-white);width:100%;transition:all var(--t-base);outline:none;resize:vertical}
+.input::placeholder,textarea.input::placeholder{color:var(--color-gray-600)}
+.input:focus,textarea.input:focus{border-color:var(--color-blue-500);background:rgba(37,99,235,0.07);box-shadow:0 0 0 3px rgba(37,99,235,0.15)}
+textarea.input{line-height:1.6}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);font-family:var(--font-family);font-weight:600;border:none;cursor:pointer;transition:all var(--t-base);text-decoration:none;letter-spacing:.02em;white-space:nowrap}
+.btn-sm{font-size:var(--fs-xs);padding:var(--s2) var(--s4);border-radius:var(--r-md)}
+.btn-md{font-size:var(--fs-sm);padding:var(--s3) var(--s5);border-radius:var(--r-lg)}
+.btn-lg{font-size:var(--fs-base);padding:var(--s4) var(--s8);border-radius:var(--r-lg)}
+.btn-primary{background:var(--gradient-brand);color:#fff;box-shadow:var(--shadow-button)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-button-hover);filter:brightness(1.08)}
+.btn-secondary{background:var(--glass-bg);color:var(--color-blue-400);border:1px solid var(--glass-border-brand);backdrop-filter:var(--glass-blur)}
+.btn-secondary:hover{background:var(--glass-bg-active);border-color:var(--color-blue-400);transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--color-gray-300);border:1px solid var(--glass-border)}
+.btn-ghost:hover{background:var(--glass-bg-hover);color:#fff;border-color:var(--glass-border-hover)}
+.btn-claude{background:rgba(217,119,87,0.12);color:#E8a07f;border:1px solid rgba(217,119,87,0.35)}
+.btn-claude:hover{background:rgba(217,119,87,0.2);transform:translateY(-2px)}
+
+/* BADGES / CHIPS */
+.badge{display:inline-flex;align-items:center;gap:var(--s1);font-size:var(--fs-xs);font-weight:600;letter-spacing:.05em;padding:var(--s1) var(--s3);border-radius:var(--r-full)}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge-blue{background:rgba(37,99,235,0.15);color:var(--color-blue-300);border:1px solid rgba(37,99,235,0.25)}
+.badge-cyan{background:rgba(6,182,212,0.15);color:#67E8F9;border:1px solid rgba(6,182,212,0.25)}
+.badge-warning{background:rgba(245,158,11,0.15);color:#FCD34D;border:1px solid rgba(245,158,11,0.25)}
+
+/* ALERT */
+.alert{border-radius:var(--r-lg);padding:var(--s4) var(--s5);font-size:var(--fs-sm);line-height:1.6;border-left:3px solid}
+.alert-info{background:rgba(59,130,246,0.08);border-color:var(--color-blue-500);color:var(--color-gray-300)}
+.why{background:rgba(37,99,235,0.06);border-left:3px solid var(--color-blue-500);border-radius:var(--r-md);padding:var(--s3) var(--s4);font-size:var(--fs-sm);color:var(--color-gray-400);line-height:1.55}
+.why b{color:var(--color-gray-300)}
+
+/* LAYOUT helpers */
+.row{display:flex;gap:var(--s4)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.section-title{font-size:var(--fs-2xl);font-weight:700;margin-bottom:var(--s2)}
+.muted{color:var(--color-gray-400);font-size:var(--fs-sm)}
+.divider{height:1px;background:var(--glass-border);margin:var(--s12) 0}
+
+/* RESULT CARDS */
+#results{display:flex;flex-direction:column;gap:var(--s6);margin-top:var(--s6)}
+.tool-box{border:1px solid var(--glass-border);border-radius:var(--r-lg);padding:var(--s4);background:rgba(2,8,24,0.35)}
+.tool-box.gemini{border-color:rgba(37,99,235,0.3)}
+.tool-box.claude{border-color:rgba(217,119,87,0.3)}
+.tool-box-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);margin-bottom:var(--s3)}
+.tool-box-title{font-size:var(--fs-sm);font-weight:600;display:flex;align-items:center;gap:var(--s2)}
+.tool-box-actions{display:flex;gap:var(--s2);flex-wrap:wrap}
+.mod-chip{background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);color:var(--color-blue-200);border-radius:var(--r-full);padding:var(--s1) var(--s3);font-size:var(--fs-xs);font-weight:500;cursor:pointer;font-family:var(--font-family);transition:all var(--t-base)}
+.mod-chip:hover{background:var(--glass-bg-active);border-color:var(--color-blue-400);color:#fff;transform:translateY(-1px)}
+#modPanel summary::-webkit-details-marker{display:none}
+.crt{display:flex;flex-direction:column;gap:var(--s4)}
+.crt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s3)}
+.crt-title{display:flex;align-items:center;gap:var(--s3);font-size:var(--fs-lg);font-weight:700;line-height:1.25}
+.crt-check{width:20px;height:20px;border-radius:var(--r-sm);border:2px solid var(--glass-border-brand);background:rgba(255,255,255,0.03);cursor:pointer;flex-shrink:0;margin-top:3px;appearance:none;transition:all var(--t-base)}
+.crt-check:checked{background:var(--gradient-brand);border-color:transparent}
+.crt-meta{font-size:var(--fs-xs);color:var(--color-gray-500);text-align:right;white-space:nowrap}
+.field-label{font-size:var(--fs-xs);color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:var(--s1);font-weight:600}
+.prompt-art{font-family:'SFMono-Regular',Consolas,monospace;font-size:var(--fs-sm);color:var(--color-blue-200);background:rgba(2,8,24,0.5);min-height:96px}
+.crt-foot{display:flex;flex-wrap:wrap;gap:var(--s2);padding-top:var(--s2);border-top:1px solid var(--glass-border)}
+
+/* TOAST */
+#toast{position:fixed;bottom:var(--s8);left:50%;transform:translateX(-50%) translateY(20px);background:var(--color-bg-elevated);border:1px solid var(--glass-border-brand);box-shadow:var(--shadow-blue-md);border-radius:var(--r-lg);padding:var(--s3) var(--s6);font-size:var(--fs-sm);font-weight:500;opacity:0;pointer-events:none;transition:all var(--t-base);z-index:50;display:flex;align-items:center;gap:var(--s2)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* EMPTY */
+.empty{text-align:center;padding:var(--s16) var(--s6);color:var(--color-gray-500)}
+.empty svg{opacity:.4;margin-bottom:var(--s4)}
+
+.hidden{display:none!important}
+@media(max-width:760px){.grid-2{grid-template-columns:1fr}#results{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="aurora-bg"></div>
+
+<main class="container">
+  <header class="hero">
+    <div class="hero-tag"><span class="dot"></span>WMI Solutions · Marketing</div>
+    <h1>Fábrica de <span class="text-gradient">Criativos</span></h1>
+    <p class="subtitle">Suba o briefing do mês — temas das postagens e das campanhas de WhatsApp — e gere todos os prompts de arte de uma vez. Cada card abre direto no Gemini (imagem) e no Claude Design (diagramação do texto).</p>
+  </header>
+
+  <!-- CONFIG -->
+  <section class="panel" style="margin-bottom:var(--s5)">
+    <div style="margin-bottom:var(--s4)">
+      <label class="input-label" for="mes">Mês / período da pauta</label>
+      <input class="input" id="mes" placeholder="Ex.: Julho 2026" style="max-width:320px">
+    </div>
+    <div style="margin-bottom:var(--s4)">
+      <label class="input-label" for="publico">Público &amp; tom — ICP Autolac <span class="muted" style="font-weight:400">(aplicado a todos os criativos · edite se precisar)</span></label>
+      <textarea class="input" id="publico" rows="10" style="font-size:var(--fs-sm);line-height:1.55"></textarea>
+    </div>
+    <div class="row" style="flex-wrap:wrap;align-items:center">
+      <input type="file" id="file" accept=".txt,.md,.csv" class="hidden">
+      <button class="btn btn-ghost btn-md" id="uploadBtn">📎 Subir briefing (.txt)</button>
+      <button class="btn btn-ghost btn-md" id="sampleBtn">✨ Carregar exemplo</button>
+      <button class="btn btn-ghost btn-md" id="resetIcpBtn">↻ Restaurar ICP padrão</button>
+    </div>
+  </section>
+
+  <!-- BRIEFING INPUT -->
+  <section class="grid-2" style="margin-bottom:var(--s6)">
+    <div class="panel">
+      <label class="input-label" for="posts">📱 Temas das postagens (redes sociais) — 1 por linha</label>
+      <textarea class="input" id="posts" rows="7" placeholder="Backup automático na nuvem&#10;Liberação de exame pelo celular&#10;Integração com convênios&#10;..."></textarea>
+      <p class="muted" style="margin-top:var(--s2)">Gera arte <b>3:4</b> (feed) e <b>9:16</b> (story/reels).</p>
+    </div>
+    <div class="panel">
+      <label class="input-label" for="wpp">💬 Temas das campanhas de WhatsApp — 1 por linha</label>
+      <textarea class="input" id="wpp" rows="7" placeholder="Autolac v10: chega de servidor físico&#10;Oferta de migração sem custo&#10;Webinar: laboratório 100% na nuvem&#10;..."></textarea>
+      <p class="muted" style="margin-top:var(--s2)">Gera arte <b>3:2</b> (1800×1200, padrão do disparo).</p>
+    </div>
+  </section>
+
+  <!-- MÓDULOS AUTOLAC (atalho de conhecimento) -->
+  <details class="panel" id="modPanel" style="margin-bottom:var(--s6)">
+    <summary style="cursor:pointer;font-weight:600;color:var(--color-blue-300);list-style:none">🧬 Adicionar módulo Autolac ao briefing <span class="muted" style="font-weight:400">(clique para abrir — 28 módulos)</span></summary>
+    <p class="muted" style="margin:var(--s3) 0">Clique num módulo para inserir no campo focado (padrão: WhatsApp). Cada um já carrega o conceito visual e o pitch certo.</p>
+    <div style="display:flex;gap:var(--s2);align-items:center;margin-bottom:var(--s3)">
+      <span class="muted">Inserir em:</span>
+      <select class="input" id="modTarget" style="width:auto"><option value="wpp">💬 WhatsApp</option><option value="posts">📱 Postagens</option></select>
+    </div>
+    <div id="modChips" style="display:flex;flex-wrap:wrap;gap:var(--s2)"></div>
+  </details>
+
+  <div class="row" style="align-items:center;gap:var(--s5);flex-wrap:wrap">
+    <button class="btn btn-primary btn-lg" id="genBtn">⚡ Gerar prompts</button>
+    <span class="muted" id="counter"></span>
+    <span style="flex:1"></span>
+    <button class="btn btn-secondary btn-md hidden" id="downloadBtn">⬇️ Baixar todos os prompts (.txt)</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RESULTS -->
+  <section>
+    <div id="emptyState" class="empty">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+      <p>Os criativos gerados aparecem aqui. Preencha o briefing e clique em <b style="color:var(--color-blue-300)">Gerar prompts</b>.</p>
+    </div>
+    <div id="results"></div>
+  </section>
+
+  <!-- ACESSO ÀS FERRAMENTAS -->
+  <section class="panel" style="margin-top:var(--s12);text-align:center">
+    <div class="field-label" style="margin-bottom:var(--s4)">Abrir ferramentas</div>
+    <div class="row" style="justify-content:center;flex-wrap:wrap;gap:var(--s4)">
+      <button class="btn btn-secondary btn-lg" id="openGemini">🍌 Abrir Gemini (imagem)</button>
+      <button class="btn btn-claude btn-lg" id="openClaude">✦ Abrir Claude Design (texto)</button>
+    </div>
+    <p class="muted" style="margin-top:var(--s4)">Acesso rápido — gere a imagem no Gemini e diagrame o texto por cima no Claude Design.</p>
+  </section>
+
+  <div class="alert alert-info" style="margin:var(--s12) 0 var(--s8)">
+    <b style="color:var(--color-blue-300)">⚡ Preenchimento automático no Gemini:</b> pra que o prompt caia <b>direto na caixa do Gemini</b> (sem Ctrl+V), instale 1x a extensão grátis <a href="https://chromewebstore.google.com/detail/gemini-url-prompt/kdbgjkfdooaiompgeckjbegnnccchmma" target="_blank" style="color:var(--color-cyan-glow)">Gemini URL Prompt</a> no Chrome. Sem ela, o botão ainda <b>copia</b> o prompt — é só dar Ctrl+V. No Claude Design o `?q=` foi removido pelo Anthropic, então lá é sempre copiar + colar.
+  </div>
+  <div class="alert alert-info" style="margin:0 0 var(--s16);border-color:var(--color-gray-600)">
+    <b style="color:var(--color-gray-300)">ℹ️ Como funciona:</b> o app monta os <b>prompts</b> (rascunho de copy + prompt de arte + briefing). A <b>geração final</b> acontece em cada ferramenta, na <b>licença Claude de cada colaborador</b>: o botão do Claude Design copia o briefing e abre o claude.ai/design — cada pessoa gera a copy e a arte na própria conta. Nenhuma chave de API necessária.
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ===== CONHECIMENTO AUTOLAC (embutido — single file) ===== */
+/* ============================================================
+   CONHECIMENTO AUTOLAC — base para elaboração de prompts
+   Fonte: Painel de Negociação de Módulos (28 módulos) +
+   Agente de Inteligência de Mercado (16 concorrentes), WMI Solutions.
+   Cada módulo tem: nome, categoria, pitch (elevator) e visual
+   (conceito de cena SEM TEXTO para o Gemini gerar a imagem base).
+   ============================================================ */
+window.AUTOLAC = {
+  contexto: "Autolac é o sistema (LIS) para laboratórios de análises clínicas da WMI Solutions. Público: donos e gestores de laboratório clínico. Tom: consultivo, foco em risco/custo invisível, não em preço.",
+
+  modulos: [
+    { nome:'Migração Cloud', cat:'Licenciamento',
+      pitch:'Tira o lab do risco do servidor físico e vira SaaS — acesso de qualquer ponto, backup contínuo, manutenção sem parar.',
+      visual:'transição de um servidor físico antigo e empoeirado em uma sala escura para um data center moderno na nuvem, dados fluindo em linhas de luz azul e ciano, sensação de segurança e modernização' },
+    { nome:'Acessos Simultâneos', cat:'Licenciamento',
+      pitch:'Cobrança por acesso simultâneo, não por usuário — paga só pelo pico. Venda mais previsível da base (94% win).',
+      visual:'rede de múltiplos pontos de acesso conectados a um núcleo central luminoso, nós distribuídos com conexões em ciano, ideia de escala e flexibilidade' },
+    { nome:'Financeiro', cat:'Gestão',
+      pitch:'Move o lab da planilha pra DRE viva. Bloqueia receita perdida em glosa via integração com atendimento e estoque.',
+      visual:'dashboard financeiro holográfico flutuante com gráficos de receita ascendentes e indicadores, abstrato, sem texto legível, tons azul e ciano' },
+    { nome:'Estoque', cat:'Gestão',
+      pitch:'Para de perder reagente por validade e de comprar no susto. Importa XML de nota, alerta vencimento, requisição por centro de custo.',
+      visual:'prateleira organizada de frascos e reagentes de laboratório com etiquetas e leitura por código, iluminação clean, controle e organização' },
+    { nome:'Confere (Delta Check)', cat:'Performance',
+      pitch:'Libera exames dentro dos parâmetros automaticamente — 97% menos tempo do bioquímico em conferência.',
+      visual:'analisador clínico automatizado processando amostras em esteira, selo de aprovação verde brilhante, automação e velocidade, ambiente laboratorial moderno' },
+    { nome:'Interlac', cat:'Performance',
+      pitch:'Interfaceamento de equipamento — resultado entra no sistema sem digitação. Carro-chefe (89% win, 173 deals).',
+      visual:'equipamento de análise clínica conectado por cabo de luz a um computador, resultado fluindo sem digitação, close-up tecnológico, brilho ciano' },
+    { nome:'Autorização Online', cat:'Integração',
+      pitch:'Tira a recepcionista do telefone com convênio (91% win). Cassi, Bradesco, IPSEMG, Unimed, etc.',
+      visual:'recepção de laboratório moderna e tranquila, telefone no gancho, tela mostrando aprovação instantânea com check, ideia de processo desburocratizado' },
+    { nome:'Comunicação com Apoio', cat:'Integração',
+      pitch:'Integra com 11 labs de apoio (Álvaro, DB, Pardini...). Requisição automática + laudo de volta. 86% win.',
+      visual:'rede de laboratórios conectados em um mapa abstrato, amostras e requisições viajando como pontos de luz entre nós, colaboração' },
+    { nome:'Laudos Web', cat:'Relacionamento',
+      pitch:'Paciente acessa laudo pelo portal — sem ir buscar. Reduz fluxo de recepção e papel.',
+      visual:'paciente em casa acessando resultado de exame no smartphone, ambiente aconchegante e desfocado, tela com gráfico abstrato sem texto, conveniência' },
+    { nome:'Kualiz Automação', cat:'Relacionamento',
+      pitch:'Mensagens automáticas via WhatsApp pro paciente: laudo liberado, lembrete, aniversário, campanhas.',
+      visual:'smartphone com balões de mensagem de WhatsApp estilizados saindo da tela, ícones de notificação em ciano, automação de relacionamento, sem texto legível' },
+    { nome:'Kualiz Gestão', cat:'Relacionamento',
+      pitch:'CRM pro WhatsApp do lab: filas, URA, BI de atendimento, monitoramento em tempo real. Pra quem tem volume.',
+      visual:'central de atendimento moderna com painel de filas e indicadores em tempo real, headset, monitor com dashboard abstrato, ambiente profissional' },
+    { nome:'Fila de Atendimento e Coleta', cat:'Performance',
+      pitch:'Mapeia o tempo do paciente: chegada → recepção → coleta. TAT mensurável, KPI executivo pronto.',
+      visual:'fluxo de pessoas em uma recepção de laboratório com linha do tempo luminosa marcando etapas, cronômetro abstrato, eficiência e medição' },
+    { nome:'NFS-e', cat:'Performance',
+      pitch:'Emite nota fiscal direto do atendimento — 1 clique, vai por e-mail pro paciente.',
+      visual:'documento de nota fiscal eletrônico estilizado se transformando em envelope de e-mail, fluxo de 1 clique, simplicidade, brilho azul' },
+    { nome:'Auditoria Pré-Faturamento', cat:'Performance',
+      pitch:'Confere todas as guias antes do faturamento. Bloqueia glosa antes do convênio devolver.',
+      visual:'lupa luminosa sobre uma pilha de guias/documentos com um escudo de proteção bloqueando um erro vermelho, prevenção e segurança financeira' },
+    { nome:'Autolac App / BI', cat:'Gestão',
+      pitch:'App pro gestor liberar laudo e ver indicadores em qualquer lugar. BI executivo + liberação mobile.',
+      visual:'gestor segurando tablet com painel de indicadores executivos abstratos, em pé fora do laboratório, mobilidade e decisão, tons azul/ciano' },
+    { nome:'Apoio x Apoiado', cat:'Integração',
+      pitch:'Integra dois Autolacs entre si. Lab de apoio se conecta nativamente ao apoiado. Lock-in puro.',
+      visual:'dois sistemas representados por dois núcleos luminosos se conectando por um elo forte de energia, integração nativa, parceria sólida' },
+    { nome:'Assinatura Digital', cat:'Relacionamento',
+      pitch:'Validade jurídica no laudo. Substitui assinatura física do responsável técnico — segurança e economia.',
+      visual:'documento de laudo com um selo digital luminoso e assinatura eletrônica, cadeado de segurança, validade e confiança, sem texto legível' },
+    { nome:'Integração Amplum', cat:'Integração',
+      pitch:'Conecta Autolac ao Amplum — médico solicita exame direto e recebe laudo automático.',
+      visual:'médico em consultório conectado digitalmente a um laboratório, fluxo de pedido e laudo como linhas de luz, parceria clínica-lab' },
+    { nome:'Integração RNDS', cat:'Integração',
+      pitch:'Envio automático de resultados notificáveis pra RNDS/SUS. Compliance regulatório sem trabalho manual.',
+      visual:'mapa estilizado do Brasil com dados de saúde fluindo para uma rede nacional central, compliance e conexão pública, tons azul e ciano' },
+    { nome:'Integração Hospitalar', cat:'Integração',
+      pitch:'Conecta Autolac ao sistema hospitalar (SPData, Celk, Tasy...). Abre porta pra contrato hospitalar.',
+      visual:'corredor hospitalar moderno desfocado com fluxo digital de dados de exames conectando lab e hospital, ambiente clínico premium' },
+    { nome:'Integração SOC GED', cat:'Integração',
+      pitch:'Integra com sistema de medicina do trabalho. Abre porta pra captação de clínicas SESMT.',
+      visual:'ambiente de medicina ocupacional, capacete e prancheta digital desfocados, exames ocupacionais fluindo digitalmente, saúde do trabalhador' },
+    { nome:'Integração Vector', cat:'Integração',
+      pitch:'Fluxo digital com clínicas que usam Vector. Pequeno volume, alto lock-in.',
+      visual:'duas plataformas digitais se acoplando por engrenagens de luz, fluxo contínuo, integração técnica, abstrato azul/ciano' },
+    { nome:'API Autolac', cat:'Integração',
+      pitch:'Endpoints pra integrações customizadas. Pra labs com TI ou parceiro de desenvolvimento.',
+      visual:'representação abstrata de código e endpoints como blocos de luz conectados, desenvolvedor, integração de sistemas, fundo escuro tecnológico' },
+    { nome:'ALLIS', cat:'Relacionamento',
+      pitch:'App do paciente — histórico e localização do lab mais próximo. Diferencial de retenção mobile.',
+      visual:'smartphone com app de saúde mostrando mapa e histórico em ícones abstratos, mão segurando, conveniência mobile, sem texto legível' },
+    { nome:'ANIMALLIS', cat:'Relacionamento',
+      pitch:'Plataforma pra veterinários/clínicas — pet com cadastro próprio. Abre o nicho veterinário.',
+      visual:'cachorro e gato saudáveis em ambiente clean de clínica veterinária, smartphone com app pet desfocado, nicho veterinário, tons azul/ciano acolhedor' },
+    { nome:'Pesquisa de Satisfação', cat:'Relacionamento',
+      pitch:'CSAT integrado pós-atendimento — mede experiência real e fortalece marca com dado.',
+      visual:'tela com estrelas de avaliação brilhantes e medidor de satisfação ascendente, paciente sorrindo desfocado ao fundo, feedback positivo' },
+    { nome:'Plataforma Aprenda', cat:'Performance',
+      pitch:'Capacitação exclusiva pra clientes Autolac — cursos em análises clínicas, BPL, qualidade.',
+      visual:'ambiente de e-learning, tela de curso online com play e progresso abstratos, equipe de laboratório aprendendo, capacitação' },
+    { nome:'Novos Módulos Autolac 10.0', cat:'Licenciamento',
+      pitch:'Próxima geração — layout moderno 100% browser, gratuito pro cliente cloud. A evolução da plataforma.',
+      visual:'interface de software ultra-moderna flutuando no navegador, cards e gráficos limpos em glassmorphism azul/ciano, evolução e futuro, SEM texto legível' }
+  ],
+
+  // Concorrentes mapeados no battlecard (para campanhas de conquista/comparação)
+  concorrentes: ['AB Sistemas','Concent','EasyLab','Emerald','Hotsoft','Jallis','Klingo','LabSys','Liga Sistemas','Manlab','Pixeon','Shift','Techmobil','Unilab','Wise-Lab','Worklab'],
+
+  // Princípio de copy (do painel): NUNCA vender por preço. Vender o custo invisível de NÃO ter o módulo
+  // (horas-equipe, erro humano, retrabalho, glosa, no-show, paciente perdido).
+  principioCopy: 'Não vender por preço. Mostrar o custo invisível de não ter a solução: horas da equipe, erro humano, retrabalho, glosa, paciente perdido.',
+
+  // Palavras-chave que mapeiam linguagem natural do briefing -> módulo
+  aliases: {
+    'Migração Cloud': ['servidor fisico','servidor proprio','sem servidor','nuvem','cloud','backup','data center','migracao','autolac 10','autolac v10','versao 10','100% browser','navegador'],
+    'Acessos Simultâneos': ['acesso simultaneo','licenca','usuario','escalavel'],
+    'Financeiro': ['financeiro','dre','fluxo de caixa','receita','glosa','contabil'],
+    'Estoque': ['estoque','reagente','validade','xml de nota','compra'],
+    'Confere (Delta Check)': ['delta check','liberacao automatica','conferencia','libera exame','bioquimico'],
+    'Interlac': ['interlac','interfaceamento','equipamento','sem digitacao','analisador'],
+    'Autorização Online': ['convenio','autorizacao','recepcionista','telefone','unimed','bradesco','elegibilidade'],
+    'Comunicação com Apoio': ['lab de apoio','apoio','pardini','alvaro','requisicao'],
+    'Laudos Web': ['laudo online','laudo no celular','laudo pelo site','resultado online','portal do paciente','exame pelo celular','liberacao de exame','buscar resultado'],
+    'Kualiz Automação': ['whatsapp automatico','mensagem automatica','lembrete','aniversario','notificacao','laudo liberado','campanha','outubro rosa'],
+    'Kualiz Gestão': ['crm','fila de whatsapp','ura','central de atendimento','monitoramento'],
+    'Fila de Atendimento e Coleta': ['fila','tempo de espera','tat','coleta','recepcao'],
+    'NFS-e': ['nota fiscal','nfse','nfs-e','emissao de nota'],
+    'Auditoria Pré-Faturamento': ['faturamento','guia','glosa','auditoria','convenio devolve'],
+    'Autolac App / BI': ['app do gestor','indicadores','dashboard','bi','gestao mobile','liberar laudo'],
+    'Apoio x Apoiado': ['apoio x apoiado','dois labs','integrar autolac'],
+    'Assinatura Digital': ['assinatura digital','validade juridica','assinatura','responsavel tecnico'],
+    'Integração Amplum': ['amplum'],
+    'Integração RNDS': ['rnds','sus','notificavel','covid','compliance'],
+    'Integração Hospitalar': ['hospital','tasy','spdata','celk','contrato hospitalar'],
+    'Integração SOC GED': ['medicina do trabalho','sesmt','ocupacional','soc'],
+    'Integração Vector': ['vector'],
+    'API Autolac': ['api','endpoint','integracao customizada'],
+    'ALLIS': ['app do paciente','allis','historico do paciente'],
+    'ANIMALLIS': ['veterinario','pet','animal','animallis'],
+    'Pesquisa de Satisfação': ['satisfacao','csat','avaliacao','feedback','nps'],
+    'Plataforma Aprenda': ['capacitacao','curso','treinamento','aprenda','bpl'],
+    'Novos Módulos Autolac 10.0': ['autolac 10','autolac v10','versao 10','nova versao','100% browser']
+  }
+};
+
+</script>
+<script>
+const $ = s => document.querySelector(s);
+
+/* ---------- BASE DE CONHECIMENTO AUTOLAC ---------- */
+const KB = window.AUTOLAC || {modulos:[],concorrentes:[],contexto:'',principioCopy:''};
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+// acha o módulo pelo nome OU por palavras-chave (aliases) que aparecem no tema
+function matchModule(theme){
+  const t = norm(theme);
+  let best=null, bestScore=0;
+  for(const m of KB.modulos){
+    const n = norm(m.nome).replace(/\s*\(.*?\)\s*/g,' ').trim();
+    const key = n.split('/')[0].split('(')[0].trim();
+    let score=0;
+    if(t.includes(key)) score = Math.max(score, key.length+5);
+    key.split(' ').filter(w=>w.length>3).forEach(w=>{ if(t.includes(w)) score=Math.max(score,w.length); });
+    const al = (KB.aliases && KB.aliases[m.nome]) || [];
+    al.forEach(a=>{ const na=norm(a); if(t.includes(na)) score=Math.max(score,na.length); });
+    if(score>bestScore){ bestScore=score; best=m; }
+  }
+  return best;
+}
+const results = $('#results'), emptyState = $('#emptyState');
+let cards = [];
+
+/* ---------- TOAST ---------- */
+let toastT;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ---------- CLIPBOARD ---------- */
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch(e){
+    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(_){}document.body.removeChild(ta);
+    return true;
+  }
+}
+
+/* ---------- PROMPT BUILDERS ---------- */
+const BRAND_STYLE = "Estilo visual da marca Autolac: fundo azul-marinho bem escuro (#020818), detalhes em azul e ciano vibrantes (#2563EB, #00D4FF), painéis com efeito glassmorphism e brilho azulado suave, cantos arredondados, estética profissional de SaaS B2B premium, clima de tecnologia, iluminação nítida e uniforme.";
+const NO_TEXT = "Sem nenhum texto, palavras, letras, números, logos ou rótulos de interface. Composição fotográfica realista, alta resolução.";
+
+const FORMATS = {
+  '3:4':  {label:'Imagem 3:4', tip:'proporção 3:4 vertical (retrato), deixe o terço inferior limpo e desfocado para inserir texto depois', canvas:'1080 × 1440 px'},
+  '9:16': {label:'Imagem 9:16', tip:'proporção 9:16 vertical (story/reels), amplo espaço negativo acima e abaixo para título e CTA', canvas:'1080 × 1920 px'},
+  '3:2':  {label:'Imagem 3:2 · 1800×1200', tip:'proporção 3:2 paisagem (final 1800×1200 px), amplo espaço negativo à direita para o texto', canvas:'1800 × 1200 px'}
+};
+
+function baseArtPrompt(theme){
+  const mod = matchModule(theme);
+  const cena = mod
+    ? `Cena conceitual: ${mod.visual}. Contexto: laboratório de análises clínicas (módulo "${mod.nome}" do Autolac).`
+    : `Cena/imagem conceitual sobre o tema: "${theme}", no contexto de um laboratório de análises clínicas.`;
+  return `${cena} ${BRAND_STYLE} ${NO_TEXT}`;
+}
+function fullArtPrompt(baseText, fmtKey){
+  const f = FORMATS[fmtKey];
+  return `${baseText}\n\nFormato: ${f.tip}.`;
+}
+function claudeBrief(card){
+  const head = `Crie a arte na identidade visual da marca Autolac (azul #2563EB / ciano #00D4FF, fundo escuro #020818, tipografia Poppins, cantos arredondados, glassmorphism).`;
+  const textos = `\n\nTexto para diagramar no espaço livre (vou subir a imagem do Gemini como fundo):\n• HEADLINE: ${card.headline}\n• CTA (botão): ${card.cta}\n• TEXTO DE APOIO: ${card.desc}\n\nMantenha legibilidade alta sobre a foto (overlay/sombra se precisar).`;
+  if(card.channel === 'post'){
+    return `${head}\n\nCrie a peça em DOIS formatos (duas pranchas) para facilitar o projeto:\n1) Retrato / feed — 1080 × 1440 px (proporção 3:4)\n2) Stories / Reels — 1080 × 1920 px (proporção 9:16)\nUse o fundo gerado no Gemini correspondente a cada proporção e adapte a diagramação do texto a cada um.${textos}\n\nExporte as DUAS versões.`;
+  }
+  const canvases = card.formats.map(f=>FORMATS[f].canvas).join(' OU ');
+  return `${head}\n\nTamanho do canvas — use o que corresponde à imagem que gerei no Gemini: ${canvases}.${textos}\n\nExporte no tamanho do canvas.`;
+}
+
+/* ---------- COPY (rascunho via template + conhecimento Autolac) ---------- */
+function draftCopy(theme, channel){
+  const t = theme.trim();
+  const mod = matchModule(theme);
+  // se bateu com um módulo, usa o elevator pitch como base da copy
+  if(mod){
+    const benef = mod.pitch.replace(/\s*\(.*?win.*?\)\s*/gi,' ').trim();
+    if(channel === 'wpp'){
+      return {
+        headline: cap(mod.nome.split('(')[0].trim()).slice(0,40),
+        cta: 'Quero saber mais',
+        primary: `${benef} [Edite: abra com a dor do lab e mostre o custo invisível de não ter — horas da equipe, erro, glosa, retrabalho.]`.slice(0,350),
+        desc: cap(mod.nome.split('(')[0].trim()).slice(0,30)
+      };
+    }
+    return {
+      headline: cap(mod.nome.split('(')[0].trim()).slice(0,40),
+      cta: 'Saiba mais',
+      primary: `${benef} [Edite com o gancho da postagem + CTA.]`.slice(0,350),
+      desc: cap(mod.nome.split('(')[0].trim()).slice(0,30)
+    };
+  }
+  // fallback sem módulo
+  if(channel === 'wpp'){
+    return {
+      headline: cap(t).slice(0,40),
+      cta: 'Quero saber mais',
+      primary: `Sobre "${t}": [edite com a dor do público + o benefício direto. Primeira linha qualifica o lead.]`,
+      desc: `${cap(t)} com o Autolac.`.slice(0,30)
+    };
+  }
+  return {
+    headline: cap(t).slice(0,40),
+    cta: 'Saiba mais',
+    primary: `${cap(t)} — [edite com o gancho da postagem e o CTA.]`,
+    desc: `${cap(t)}.`.slice(0,30)
+  };
+}
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ---------- BUILD CARD OBJECTS ---------- */
+function buildCards(){
+  const posts = $('#posts').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const wpp   = $('#wpp').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  let id = 0;
+  const out = [];
+  posts.forEach(t=>{
+    const c = draftCopy(t,'post');
+    const card = {id:id++, theme:t, channel:'post', formats:['3:4','9:16','3:2'], base:baseArtPrompt(t), ...c};
+    card.claude = claudeBrief(card);
+    out.push(card);
+  });
+  wpp.forEach(t=>{
+    const c = draftCopy(t,'wpp');
+    const card = {id:id++, theme:t, channel:'wpp', formats:['3:2','9:16','3:4'], base:baseArtPrompt(t), ...c};
+    card.claude = claudeBrief(card);
+    out.push(card);
+  });
+  return out;
+}
+
+/* ---------- RENDER ---------- */
+function render(){
+  results.innerHTML = '';
+  if(!cards.length){ emptyState.classList.remove('hidden'); $('#downloadBtn').classList.add('hidden'); $('#counter').textContent=''; return; }
+  emptyState.classList.add('hidden');
+  $('#downloadBtn').classList.remove('hidden');
+  const nPost = cards.filter(c=>c.channel==='post').length, nWpp = cards.filter(c=>c.channel==='wpp').length;
+  $('#counter').textContent = `${cards.length} criativos · ${nPost} posts · ${nWpp} WhatsApp`;
+
+  cards.forEach(card=>{
+    const el = document.createElement('div');
+    el.className = 'card crt';
+    const chan = card.channel==='wpp'
+      ? '<span class="badge badge-cyan">WhatsApp</span>'
+      : '<span class="badge badge-blue">Social</span>';
+    const fmtBtns = card.formats.map(f=>
+      `<button class="btn btn-secondary btn-sm" data-act="gemini" data-id="${card.id}" data-fmt="${f}">🍌 Abrir no Gemini · ${f}</button>`
+    ).join('');
+
+    el.innerHTML = `
+      <div class="crt-head">
+        <div class="crt-title"><input type="checkbox" class="crt-check" checked>${escapeHtml(card.theme)}</div>
+        <div class="crt-meta">${chan}<br><span style="font-size:var(--fs-xs);color:var(--color-gray-600)">estático</span></div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="field-label">Headline (máx 40)</div>
+          <input class="input" data-bind="headline" data-id="${card.id}" value="${escapeAttr(card.headline)}" maxlength="40">
+        </div>
+        <div>
+          <div class="field-label">CTA (botão)</div>
+          <input class="input" data-bind="cta" data-id="${card.id}" value="${escapeAttr(card.cta)}">
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">Texto primário</div>
+        <textarea class="input" rows="3" data-bind="primary" data-id="${card.id}">${escapeHtml(card.primary)}</textarea>
+      </div>
+
+      <div>
+        <div class="field-label">Descrição (abaixo do CTA)</div>
+        <input class="input" data-bind="desc" data-id="${card.id}" value="${escapeAttr(card.desc)}" maxlength="30">
+      </div>
+
+      <div class="tool-box gemini">
+        <div class="tool-box-head">
+          <div class="tool-box-title">🍌 Prompt para o <b>Gemini</b> <span class="muted" style="font-weight:400">(imagem · sem texto)</span></div>
+          <button class="btn btn-ghost btn-sm" data-act="copygemini" data-id="${card.id}">⧉ Copiar</button>
+        </div>
+        <textarea class="input prompt-art" rows="4" data-bind="base" data-id="${card.id}">${escapeHtml(card.base)}</textarea>
+        <div class="tool-box-actions" style="margin-top:var(--s3)">
+          ${fmtBtns}
+        </div>
+      </div>
+
+      <div class="tool-box claude">
+        <div class="tool-box-head">
+          <div class="tool-box-title">✦ Briefing para o <b>Claude Design</b> <span class="muted" style="font-weight:400">(diagramação do texto · ${card.formats.map(f=>FORMATS[f].canvas).join(' / ')})</span></div>
+          <button class="btn btn-ghost btn-sm" data-act="copyclaude" data-id="${card.id}">⧉ Copiar</button>
+        </div>
+        <textarea class="input" rows="5" data-bind="claude" data-id="${card.id}">${escapeHtml(card.claude)}</textarea>
+        <div class="tool-box-actions" style="margin-top:var(--s3)">
+          <button class="btn btn-claude btn-sm" data-act="claude" data-id="${card.id}">✦ Abrir no Claude Design</button>
+        </div>
+      </div>
+
+      <div class="why"><b>Por que funciona:</b> o Gemini gera só a foto/mockup (sem texto, com espaço livre); o Claude Design diagrama o texto por cima, no tamanho exato. ${card.channel==='wpp'?'Aborda direto a dor do público na campanha.':'Mantém o feed consistente na identidade Autolac.'}</div>
+    `;
+    results.appendChild(el);
+  });
+}
+
+/* ---------- ESCAPE ---------- */
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escapeAttr(s){return escapeHtml(s).replace(/"/g,'&quot;');}
+
+/* ---------- EVENTS ---------- */
+// keep edits in the model
+results.addEventListener('input', e=>{
+  const bind = e.target.dataset.bind; if(!bind) return;
+  const card = cards.find(c=>c.id == e.target.dataset.id);
+  if(card) card[bind] = e.target.value;
+});
+
+// tool buttons
+results.addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-act]'); if(!btn) return;
+  const card = cards.find(c=>c.id == btn.dataset.id); if(!card) return;
+  const act = btn.dataset.act;
+
+  if(act === 'gemini'){
+    const fmt = btn.dataset.fmt;
+    const prompt = fullArtPrompt(card.base, fmt);
+    await copy(prompt); // garantia (Ctrl+V) caso a extensão não esteja instalada
+    toast(`Abrindo Gemini ${fmt} — prompt pronto`);
+    // ?prompt= preenche a caixa automaticamente SE a extensão "Gemini URL Prompt" estiver instalada
+    window.open('https://gemini.google.com/app?prompt=' + encodeURIComponent(prompt), '_blank');
+  }
+  if(act === 'claude'){
+    await copy(card.claude);
+    toast('Briefing copiado — cole no Claude Design (Ctrl+V)');
+    window.open('https://claude.ai/design', '_blank');
+  }
+  if(act === 'copygemini'){ await copy(card.base); toast('Prompt do Gemini copiado'); }
+  if(act === 'copyclaude'){ await copy(card.claude); toast('Briefing do Claude copiado'); }
+});
+
+/* ---------- GENERATE ---------- */
+$('#genBtn').addEventListener('click', ()=>{
+  cards = buildCards();
+  if(!cards.length){ toast('Adicione ao menos um tema no briefing'); return; }
+  render();
+  results.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+/* ---------- DOWNLOAD ---------- */
+$('#downloadBtn').addEventListener('click', ()=>{
+  const mes = $('#mes').value || 'pauta';
+  let txt = `FÁBRICA DE CRIATIVOS WMI — ${mes}\n${'='.repeat(40)}\n\n`;
+  cards.forEach((c,i)=>{
+    txt += `[${i+1}] ${c.theme}  (${c.channel==='wpp'?'WhatsApp':'Social'})\n`;
+    txt += `Headline: ${c.headline}\nCTA: ${c.cta}\nTexto: ${c.primary}\nDescrição: ${c.desc}\n`;
+    c.formats.forEach(f=>{ txt += `\n— Prompt Gemini ${f} —\n${fullArtPrompt(c.base, f)}\n`; });
+    txt += `\n— Briefing Claude Design —\n${c.claude}\n`;
+    txt += `\n${'-'.repeat(40)}\n\n`;
+  });
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `criativos-${mes.replace(/\s+/g,'-').toLowerCase()}.txt`;
+  a.click();
+  toast('Arquivo baixado');
+});
+
+/* ---------- UPLOAD ---------- */
+$('#uploadBtn').addEventListener('click', ()=>$('#file').click());
+$('#file').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev=>{
+    // briefing simples: separa por seções [POSTS] / [WHATSAPP] se existir, senão joga tudo em posts
+    const text = ev.target.result;
+    const m = text.match(/\[?\s*(whatsapp|wpp)\s*\]?/i);
+    if(m){
+      const idx = m.index;
+      $('#posts').value = text.slice(0,idx).replace(/\[?\s*posts?\s*\]?/i,'').trim();
+      $('#wpp').value = text.slice(idx).replace(/\[?\s*(whatsapp|wpp)\s*\]?/i,'').trim();
+    } else {
+      $('#posts').value = text.trim();
+    }
+    toast('Briefing carregado');
+  };
+  r.readAsText(f);
+});
+
+/* ---------- CHIPS DE MÓDULOS AUTOLAC ---------- */
+(function(){
+  const wrap = $('#modChips'); if(!wrap || !KB.modulos.length) return;
+  KB.modulos.forEach(m=>{
+    const b = document.createElement('button');
+    b.className = 'mod-chip'; b.type='button';
+    b.textContent = m.nome.split('/')[0].split('(')[0].trim();
+    b.title = m.pitch;
+    b.addEventListener('click', ()=>{
+      const target = $('#modTarget').value;
+      const ta = $('#'+target);
+      const val = ta.value.trim();
+      ta.value = (val ? val+'\n' : '') + b.textContent;
+      toast('"'+b.textContent+'" adicionado');
+    });
+    wrap.appendChild(b);
+  });
+})();
+
+/* ---------- ICP PADRÃO (pré-fixado, editável) ---------- */
+const ICP_DEFAULT = `ICP do Autolac — Perfil de Cliente Ideal
+Quem é, em uma frase: laboratório de análises clínicas brasileiro de médio porte, de 5 a 100 colaboradores com 1 a 5+ unidades (matriz, postos de coleta e/ou coleta domiciliar), que já tem volume suficiente para sentir dor de processo manual — mas ainda perde dinheiro e tempo com planilha, digitação, glosa e servidor físico.
+Não é o lab que "quer um sistema". É o lab que está perdendo receita sem enxergar — e o trabalho do Autolac (e da campanha) é fazer ele enxergar.
+
+Sinais de que é o cliente certo (critério de qualificação e segmentação de mídia):
+- Roda em servidor físico próprio e nunca testou o restore do backup.
+- Faz controle financeiro em planilha — não tem DRE viva e não sabe quanto perde em glosa.
+- Tem recepcionista preso no telefone com convênio para autorizar guia.
+- Digita resultado de equipamento manualmente (sem interfaceamento).
+- Bioquímico gasta horas conferindo exame dentro da normalidade.
+- Tem mais de uma unidade ou faz coleta externa e se vira com VPN/gambiarra.
+- Já usa WhatsApp no atendimento, mas desorganizado e sem rastreio.
+- Está insatisfeito com o suporte/SLA do sistema atual (gatilho real da troca).
+
+As dores que mais fecham venda (deals reais contra 16 concorrentes, por recorrência):
+1. Financeiro / glosa — receita autorizada que nunca entra no caixa.
+2. Relatórios gerenciais / BI — o dono decide no escuro, sem indicador.
+3. Estoque — reagente vencido e compra no susto.
+4. Suporte / SLA — abandonado pelo fornecedor atual.
+5. Integração com laboratórios de apoio — retrabalho de requisição e laudo manual.
+
+Diferenciais com prova (usar em copy e demo):
+- Interlac (interfaceamento): resultado sem digitação. 89% conversão, 173 deals.
+- Confere / Delta Check: liberação automática de exame normal — 97% menos tempo do bioquímico.
+- Autorização Online (Unimed, Bradesco, Cassi, IPSEMG…): tira a recepção do telefone — 91%.
+- Acessos simultâneos (não por usuário): paga só pelo pico — 94%, a venda mais previsível.
+- Comunicação com Apoio (Álvaro, DB, Pardini, Sérgio Franco…): integra 11 labs — 86%.
+- Migração Cloud: acaba o risco do servidor; quase sempre abaixo do custo de 36 meses do servidor próprio.
+- Anti-glosa (Financeiro + Auditoria Pré-Faturamento): bloqueia a glosa antes do convênio devolver.
+- Relacionamento que prende: Kualiz (WhatsApp), Laudos Web, app ALLIS, assinatura digital, pesquisa de satisfação.
+
+MENSAGEM CENTRAL: não é "tenha um sistema melhor". É: "pessoas são custo, erro é custo, manual é custo — e você paga isso todo mês sem perceber." O Autolac transforma esse custo invisível em margem.
+
+Quem NÃO é o ICP (não gastar mídia):
+- Lab minúsculo, volume baixíssimo, sem equipe — preço sempre trava.
+- Lab que acabou de trocar de sistema e está em contrato longo.
+- Quem busca só "o mais barato" sem dor operacional clara — o pitch é ROI, não desconto.
+
+Ângulos prontos (headline + CTA):
+- "Se o servidor do seu lab queimar hoje, em quanto tempo você volta a operar?" → simulação de risco gratuita.
+- "Quanto da sua receita autorizada vira glosa todo mês?" → diagnóstico financeiro do lab.
+- "Seu bioquímico ainda confere exame normal na mão?" → demonstração do Delta Check.
+- "Sua recepção atende paciente ou fica no telefone com convênio?" → demo de Autorização Online.`;
+if($('#publico')) $('#publico').value = ICP_DEFAULT;
+$('#resetIcpBtn') && $('#resetIcpBtn').addEventListener('click', ()=>{ $('#publico').value = ICP_DEFAULT; toast('ICP padrão restaurado'); });
+
+/* ---------- ACESSO DIRETO ÀS FERRAMENTAS ---------- */
+$('#openGemini').addEventListener('click', ()=>{ window.open('https://gemini.google.com/app','_blank'); toast('Abrindo Gemini'); });
+$('#openClaude').addEventListener('click', ()=>{ window.open('https://claude.ai/design','_blank'); toast('Abrindo Claude Design'); });
+
+/* ---------- SAMPLE ---------- */
+$('#sampleBtn').addEventListener('click', ()=>{
+  $('#mes').value = 'Julho 2026';
+  // não sobrescreve o ICP (campo Público & tom) — só preenche mês e temas
+  $('#posts').value = ['Backup automático na nuvem','Liberação de exame pelo celular','Integração com convênios','Segurança de dados (LGPD)'].join('\n');
+  $('#wpp').value = ['Autolac v10: chega de servidor físico','Migração assistida sem custo','Webinar: laboratório 100% na nuvem'].join('\n');
+  toast('Exemplo carregado — clique em Gerar prompts');
+});
+</script>
+</body>
+</html>
