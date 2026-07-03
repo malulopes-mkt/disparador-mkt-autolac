@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel 58º CBPC/ML — Expositor WMI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --color-bg-deep:#020818; --color-bg-dark:#050A1F; --color-bg-navy:#0A1628;
+  --color-bg-mid:#0D1B3E; --color-bg-elevated:#111D40;
+  --color-blue-900:#1E3A8A; --color-blue-700:#1D4ED8; --color-blue-600:#2563EB;
+  --color-blue-500:#3B82F6; --color-blue-400:#60A5FA; --color-blue-300:#93C5FD; --color-blue-200:#BFDBFE;
+  --color-cyan-500:#06B6D4; --color-cyan-400:#22D3EE; --color-cyan-300:#67E8F9; --color-cyan-glow:#00D4FF;
+  --color-white:#FFFFFF; --color-gray-100:#F1F5F9; --color-gray-300:#CBD5E1;
+  --color-gray-400:#94A3B8; --color-gray-500:#64748B; --color-gray-600:#475569; --color-gray-700:#334155;
+  --color-success:#10B981; --color-success-light:rgba(16,185,129,0.15);
+  --color-warning:#F59E0B; --color-warning-light:rgba(245,158,11,0.15);
+  --color-error:#EF4444; --color-error-light:rgba(239,68,68,0.15);
+  --color-info:#3B82F6; --color-info-light:rgba(59,130,246,0.15);
+  --gradient-brand:linear-gradient(135deg,#2563EB 0%,#06B6D4 100%);
+  --gradient-text:linear-gradient(90deg,#60A5FA 0%,#00D4FF 100%);
+  --glass-bg:rgba(255,255,255,0.04); --glass-bg-hover:rgba(255,255,255,0.07);
+  --glass-bg-active:rgba(37,99,235,0.15); --glass-border:rgba(255,255,255,0.08);
+  --glass-border-hover:rgba(96,165,250,0.3); --glass-border-brand:rgba(37,99,235,0.4);
+  --glass-blur:blur(20px);
+  --shadow-md:0 4px 20px rgba(0,0,0,0.4); --shadow-lg:0 8px 40px rgba(0,0,0,0.5);
+  --shadow-blue-sm:0 0 15px rgba(37,99,235,0.2); --shadow-blue-md:0 0 30px rgba(37,99,235,0.3);
+  --shadow-button:0 4px 20px rgba(37,99,235,0.4); --shadow-button-hover:0 8px 30px rgba(37,99,235,0.6);
+  --font-family:'Poppins',sans-serif;
+  --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-extrabold:800;
+  --fs-xs:0.625rem; --fs-sm:0.75rem; --fs-base:0.875rem; --fs-md:1rem; --fs-lg:1.125rem;
+  --fs-xl:1.25rem; --fs-2xl:1.5rem; --fs-3xl:1.875rem; --fs-4xl:2.25rem; --fs-5xl:3rem;
+  --lh-tight:1.2; --lh-snug:1.35; --lh-normal:1.5; --lh-relaxed:1.7;
+  --space-1:0.25rem; --space-2:0.5rem; --space-3:0.75rem; --space-4:1rem; --space-5:1.25rem;
+  --space-6:1.5rem; --space-8:2rem; --space-10:2.5rem; --space-12:3rem; --space-16:4rem;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-2xl:28px; --radius-full:9999px;
+  --transition-base:250ms ease; --transition-spring:350ms cubic-bezier(0.34,1.56,0.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-family);background:var(--color-bg-deep);color:var(--color-white);
+  line-height:var(--lh-normal);font-size:var(--fs-base);overflow-x:hidden;min-height:100vh;}
+
+/* AURORA */
+.aurora-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.aurora-bg::before{content:'';position:absolute;width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,rgba(37,99,235,0.12) 0%,transparent 70%);top:-200px;left:-200px;
+  animation:aurora1 20s ease-in-out infinite;}
+.aurora-bg::after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%);bottom:-100px;right:-100px;
+  animation:aurora2 25s ease-in-out infinite;}
+@keyframes aurora1{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(100px,80px) scale(1.1);}66%{transform:translate(-60px,120px) scale(0.9);}}
+@keyframes aurora2{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(-80px,-60px) scale(1.15);}66%{transform:translate(60px,-100px) scale(0.95);}}
+
+.container{max-width:1200px;margin:0 auto;padding:0 var(--space-6);position:relative;z-index:1;}
+.text-gradient{background:var(--gradient-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* HERO */
+.hero-tag{display:inline-flex;align-items:center;gap:var(--space-2);background:rgba(37,99,235,0.15);
+  border:1px solid rgba(37,99,235,0.3);border-radius:var(--radius-full);padding:var(--space-1) var(--space-4);
+  font-size:var(--fs-xs);font-weight:var(--fw-semibold);text-transform:uppercase;letter-spacing:0.12em;
+  color:var(--color-blue-300);margin-bottom:var(--space-5);}
+.hero-tag .dot{width:7px;height:7px;border-radius:50%;background:var(--color-cyan-glow);
+  box-shadow:0 0 8px var(--color-cyan-glow);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* CARDS */
+.card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);
+  border-radius:var(--radius-xl);padding:var(--space-6);transition:all var(--transition-base);}
+.card-glow{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(37,99,235,0.25);
+  border-radius:var(--radius-xl);padding:var(--space-6);box-shadow:var(--shadow-blue-sm),inset 0 1px 0 rgba(255,255,255,0.05);
+  position:relative;overflow:hidden;transition:all var(--transition-base);}
+.card-glow::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(37,99,235,0.2),transparent 70%);pointer-events:none;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:var(--space-1);font-size:var(--fs-xs);
+  font-weight:var(--fw-semibold);letter-spacing:0.05em;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.badge-blue{background:rgba(37,99,235,0.15);color:var(--color-blue-300);border:1px solid rgba(37,99,235,0.25);}
+.badge-success{background:var(--color-success-light);color:#6EE7B7;border:1px solid rgba(16,185,129,0.25);}
+.badge-warning{background:var(--color-warning-light);color:#FCD34D;border:1px solid rgba(245,158,11,0.25);}
+.badge-error{background:var(--color-error-light);color:#FCA5A5;border:1px solid rgba(239,68,68,0.25);}
+
+/* PROGRESS */
+.progress-track{width:100%;height:10px;background:rgba(255,255,255,0.06);border-radius:var(--radius-full);overflow:hidden;}
+.progress-fill{height:100%;background:var(--gradient-brand);border-radius:var(--radius-full);
+  transition:width 600ms cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 12px rgba(6,182,212,0.5);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);font-family:var(--font-family);
+  font-weight:var(--fw-semibold);border:none;cursor:pointer;transition:all var(--transition-base);text-decoration:none;
+  letter-spacing:0.02em;font-size:var(--fs-sm);padding:var(--space-2) var(--space-5);border-radius:var(--radius-lg);}
+.btn-ghost{background:transparent;color:var(--color-gray-300);border:1px solid var(--glass-border);}
+.btn-ghost:hover{background:var(--glass-bg-hover);color:var(--color-white);border-color:var(--glass-border-hover);}
+.btn-ghost.active{background:var(--glass-bg-active);color:var(--color-white);border-color:var(--color-blue-400);}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-12);}
+.kpi-label{font-size:var(--fs-xs);color:var(--color-gray-400);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:var(--space-2);}
+.kpi-num{font-size:var(--fs-5xl);font-weight:var(--fw-extrabold);line-height:1;}
+.kpi-sub{font-size:var(--fs-sm);color:var(--color-gray-400);margin-top:var(--space-2);}
+
+/* PARAMS */
+.param-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-4);}
+.param{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:var(--space-4);}
+.param .lbl{font-size:var(--fs-xs);color:var(--color-gray-400);text-transform:uppercase;letter-spacing:0.08em;}
+.param .val{font-size:var(--fs-lg);font-weight:var(--fw-bold);margin-top:var(--space-1);}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-4);margin-bottom:var(--space-6);}
+.section-header h2{font-size:var(--fs-2xl);font-weight:var(--fw-bold);}
+.filters{display:flex;gap:var(--space-2);flex-wrap:wrap;}
+
+/* PHASE */
+.phase{margin-bottom:var(--space-10);}
+.phase-title{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);font-size:var(--fs-lg);font-weight:var(--fw-semibold);}
+.phase-title .dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+
+/* TASK ROW */
+.task{display:flex;align-items:flex-start;gap:var(--space-4);background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);margin-bottom:var(--space-3);transition:all var(--transition-base);}
+.task:hover{border-color:var(--glass-border-hover);background:var(--glass-bg-hover);}
+.task.done{opacity:0.55;}
+.task.done .task-title{text-decoration:line-through;color:var(--color-gray-400);}
+.task-check{position:relative;flex-shrink:0;margin-top:2px;}
+.task-check input{position:absolute;opacity:0;width:26px;height:26px;cursor:pointer;z-index:2;margin:0;}
+.task-check .box{width:26px;height:26px;border-radius:var(--radius-sm);border:2px solid var(--glass-border-brand);
+  background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;transition:all var(--transition-base);}
+.task-check input:checked + .box{background:var(--gradient-brand);border-color:transparent;}
+.task-check .box svg{opacity:0;transition:opacity var(--transition-base);}
+.task-check input:checked + .box svg{opacity:1;}
+.task-body{flex:1;min-width:0;}
+.task-top{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-1);}
+.task-date{font-size:var(--fs-sm);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.task-title{font-size:var(--fs-base);font-weight:var(--fw-medium);}
+.task-detail{font-size:var(--fs-sm);color:var(--color-gray-400);line-height:var(--lh-snug);margin-top:2px;}
+.task-dest{display:inline-block;font-size:var(--fs-xs);color:var(--color-cyan-300);margin-top:var(--space-2);
+  background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:var(--radius-full);padding:2px var(--space-3);}
+
+/* CONTACTS */
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-4);}
+.contact .role{font-size:var(--fs-xs);color:var(--color-blue-300);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-2);}
+.contact .name{font-weight:var(--fw-semibold);font-size:var(--fs-md);}
+.contact a{color:var(--color-cyan-300);text-decoration:none;font-size:var(--fs-sm);display:block;margin-top:var(--space-1);word-break:break-all;}
+.contact a:hover{text-decoration:underline;}
+
+.reset-link{background:none;border:none;color:var(--color-gray-500);font-size:var(--fs-sm);cursor:pointer;text-decoration:underline;font-family:var(--font-family);}
+.reset-link:hover{color:var(--color-gray-300);}
+
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.kpi-grid{grid-template-columns:1fr;}.kpi-num{font-size:var(--fs-4xl);}}
+</style>
+</head>
+<body>
+<div class="aurora-bg"></div>
+
+<main class="container" style="padding-top:var(--space-16);padding-bottom:var(--space-16);">
+
+  <header style="margin-bottom:var(--space-12);">
+    <div class="hero-tag"><span class="dot"></span> WMI Solutions · Expositor</div>
+    <h1 style="font-size:clamp(2rem,4vw,3.5rem);font-weight:var(--fw-extrabold);line-height:var(--lh-tight);margin-bottom:var(--space-4);letter-spacing:-0.02em;">
+      Painel do Expositor <span class="text-gradient">58º CBPC/ML</span>
+    </h1>
+    <p style="font-size:var(--fs-lg);color:var(--color-gray-400);max-width:680px;line-height:var(--lh-relaxed);">
+      Cronograma e plano de ação do estande nº 131 (42 m²) — Congresso Brasileiro de Patologia Clínica / Medicina Laboratorial · CentroSul, Florianópolis · 15–17 de setembro de 2026.
+    </p>
+  </header>
+
+  <!-- KPIs -->
+  <section class="kpi-grid">
+    <div class="card-glow">
+      <div class="kpi-label">⚠ Prazo crítico · 03/ago</div>
+      <div class="kpi-num text-gradient" id="kpi-deadline">–</div>
+      <div class="kpi-sub" id="kpi-deadline-sub">dias para a entrega obrigatória</div>
+    </div>
+    <div class="card-glow">
+      <div class="kpi-label">Início da montagem · 11/set</div>
+      <div class="kpi-num text-gradient" id="kpi-montagem">–</div>
+      <div class="kpi-sub">dias para montar o estande</div>
+    </div>
+    <div class="card-glow">
+      <div class="kpi-label">Progresso geral</div>
+      <div class="kpi-num text-gradient" id="kpi-progress">0%</div>
+      <div class="progress-track" style="margin-top:var(--space-3);"><div class="progress-fill" id="kpi-bar" style="width:0%"></div></div>
+    </div>
+    <div class="card-glow">
+      <div class="kpi-label">Tarefas concluídas</div>
+      <div class="kpi-num text-gradient"><span id="kpi-done">0</span><span style="font-size:var(--fs-2xl);color:var(--color-gray-500);">/<span id="kpi-total">0</span></span></div>
+      <div class="kpi-sub" id="kpi-crit-sub">itens do plano de ação</div>
+    </div>
+  </section>
+
+  <!-- PARÂMETROS DO ESTANDE -->
+  <section class="card" style="margin-bottom:var(--space-12);">
+    <h2 style="font-size:var(--fs-xl);font-weight:var(--fw-bold);margin-bottom:var(--space-5);">Parâmetros do estande nº 131</h2>
+    <div class="param-grid">
+      <div class="param"><div class="lbl">Metragem</div><div class="val">42 m²</div></div>
+      <div class="param"><div class="lbl">Tipo</div><div class="val">Padrão / institucional</div></div>
+      <div class="param"><div class="lbl">KVA gratuito</div><div class="val">2 KVA</div></div>
+      <div class="param"><div class="lbl">Altura máxima</div><div class="val">4,00 m</div></div>
+      <div class="param"><div class="lbl">Mezanino</div><div class="val">Não permitido</div></div>
+      <div class="param"><div class="lbl">Fechamento lateral</div><div class="val">máx. 30%</div></div>
+      <div class="param"><div class="lbl">Credenciais expositor</div><div class="val">12 + 3 especiais</div></div>
+      <div class="param"><div class="lbl">Pastas / Convites festa</div><div class="val">15 / 12</div></div>
+      <div class="param"><div class="lbl">Alvará sanitário</div><div class="val">Simplificado · R$ 60,91</div></div>
+      <div class="param"><div class="lbl">KVA adicional</div><div class="val">R$ 850/un.</div></div>
+    </div>
+  </section>
+
+  <!-- CRONOGRAMA -->
+  <section style="margin-bottom:var(--space-12);">
+    <div class="section-header">
+      <h2>Cronograma & plano de ação</h2>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div id="phases"></div>
+    <div style="text-align:right;margin-top:var(--space-4);">
+      <button class="reset-link" id="reset-btn">Reiniciar todos os check-ins</button>
+    </div>
+  </section>
+
+  <!-- DOCUMENTOS -->
+  <section style="margin-bottom:var(--space-12);">
+    <div class="section-header"><h2>Documentação obrigatória · vence 03/08</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-4);">
+      <div class="card-glow">
+        <div class="task-dest" style="margin:0 0 var(--space-3);">→ valeria@designto.com.br</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--fs-base);">
+          <li>◦ Projeto do estande (planta + elevações c/ cotas)</li>
+          <li>◦ Projeto de LED (se houver)</li>
+          <li>◦ RRT (projeto, execução, elétrica, antichamas)</li>
+          <li>◦ Formulário 1 assinado</li>
+        </ul>
+      </div>
+      <div class="card-glow">
+        <div class="task-dest" style="margin:0 0 var(--space-3);">→ expositor@sbpc.org.br</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--fs-base);">
+          <li>◦ Formulário 1 assinado</li>
+          <li>◦ Solicitação de KVA adicional (só se &gt; 2)</li>
+          <li>◦ Lista de credenciamento de serviços</li>
+          <li>◦ Comprovação de quitação</li>
+          <li>◦ Protocolo da vigilância sanitária (após emitido)</li>
+        </ul>
+      </div>
+      <div class="card-glow">
+        <div class="task-dest" style="margin:0 0 var(--space-3);">Alvará sanitário · VP Central</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--fs-base);">
+          <li>◦ Cartão CNPJ</li>
+          <li>◦ Nome + CPF do responsável</li>
+          <li>◦ Lista de produtos/materiais expostos</li>
+          <li>◦ Taxa municipal R$ 60,91</li>
+          <li style="color:var(--color-gray-400);font-size:var(--fs-sm);">Iniciar ~15 dias antes (prazo do órgão)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTATOS -->
+  <section>
+    <div class="section-header"><h2>Contatos-chave</h2></div>
+    <div class="contact-grid">
+      <div class="card contact">
+        <div class="role">SBPC/ML · geral, KVA, credenciais</div>
+        <div class="name">Maria Fernandes</div>
+        <a href="mailto:expositor@sbpc.org.br">expositor@sbpc.org.br</a>
+        <a href="tel:+552130771401">+55 (21) 3077-1401</a>
+      </div>
+      <div class="card contact">
+        <div class="role">Aprovação de projeto · Design To</div>
+        <div class="name">Valéria Salgado</div>
+        <a href="mailto:valeria@designto.com.br">valeria@designto.com.br</a>
+        <a href="tel:+5521999130467">+55 (21) 99913-0467</a>
+      </div>
+      <div class="card contact">
+        <div class="role">Alvará sanitário · VP Central</div>
+        <div class="name">Vanessa Pinheiro</div>
+        <a href="mailto:alvaras@vpcentraleventos.com.br">alvaras@vpcentraleventos.com.br</a>
+        <a href="tel:+5548984725775">+55 (48) 98472-5775</a>
+      </div>
+      <div class="card contact">
+        <div class="role">Internet / telefone · Vero/ArteLink</div>
+        <div class="name">Daniel Mendes</div>
+        <a href="mailto:daniel.mendes@artelink.com.br">daniel.mendes@artelink.com.br</a>
+        <a href="tel:+554896513000">+55 (48) 9651-3000</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="margin-top:var(--space-16);text-align:center;color:var(--color-gray-600);font-size:var(--fs-sm);">
+    Painel gerado a partir do Manual do Expositor · 58º CBPC/ML · CentroSul, Florianópolis · Set/2026
+  </footer>
+
+</main>
+
+<script>
+const DEADLINE = new Date('2026-08-03T23:59:59');
+const MONTAGEM = new Date('2026-09-11T00:00:00');
+
+const PHASES = [
+  {id:'f1', label:'Semana 1 · 03–10/jul · URGENTE', color:'var(--color-error)', filter:'Urgente'},
+  {id:'f2', label:'Semana 2–3 · 11–25/jul · Produção', color:'var(--color-warning)', filter:'Produção'},
+  {id:'f3', label:'Até 03/ago · ENTREGA OBRIGATÓRIA', color:'var(--color-error)', filter:'Entrega'},
+  {id:'f4', label:'Agosto · Contratações paralelas', color:'var(--color-blue-500)', filter:'Agosto'},
+  {id:'f5', label:'Setembro · Execução', color:'var(--color-success)', filter:'Execução'},
+];
+
+const TASKS = [
+  {id:'t1', phase:'f1', date:'08/jul', title:'Cotar e contratar a montadora', detail:'Tarefa nº 1 — sem ela, projeto e RRT não saem a tempo. Enviar cópia do manual à contratada.', dest:'Interno'},
+  {id:'t2', phase:'f1', date:'08/jul', title:'Confirmar pagamento do estande em dia', detail:'Parcelamento quitado é pré-requisito para liberar a montagem.', dest:'Financeiro → SBPC/ML'},
+  {id:'t3', phase:'f1', date:'10/jul', title:'Briefing do estande à montadora', detail:'42 m², teto 4 m, sem mezanino, layout institucional, fechamento ≤30% por lateral.', dest:'Interno'},
+
+  {id:'t4', phase:'f2', date:'15/jul', title:'Técnico calcula o KVA', detail:'Confirmar se os 2 KVA gratuitos bastam ou se precisa de adicional.', dest:'Montadora'},
+  {id:'t5', phase:'f2', date:'18/jul', title:'Planta baixa + elevações com cotas', detail:'Projeto completo do estande (+ projeto de LED, se houver).', dest:'Montadora'},
+  {id:'t6', phase:'f2', date:'22/jul', title:'Recolher a RRT', detail:'Projeto, execução, elétrica e certificação antichamas.', dest:'Montadora'},
+  {id:'t7', phase:'f2', date:'25/jul', title:'Formulário 1 preenchido e assinado', detail:'Assinatura obrigatória do responsável pela expositora + montadora (+ agência, se houver).', dest:'Interno'},
+  {id:'t8', phase:'f2', date:'25/jul', title:'Iniciar o alvará sanitário', detail:'Prazo do órgão ~15 dias. Juntar CNPJ, responsável e lista de materiais.', dest:'Despachante · VP Central'},
+
+  {id:'t9',  phase:'f3', date:'03/ago', title:'Enviar projeto + RRT', detail:'Planta, elevações, projeto de LED e RRT.', dest:'→ valeria@designto.com.br'},
+  {id:'t10', phase:'f3', date:'03/ago', title:'Enviar Formulário 1 assinado', detail:'Para os dois e-mails.', dest:'→ expositor@sbpc.org.br + valeria@designto.com.br'},
+  {id:'t11', phase:'f3', date:'03/ago', title:'Solicitar KVA adicional (se > 2)', detail:'R$ 850/un. até 03/08; após, +10%.', dest:'→ expositor@sbpc.org.br'},
+  {id:'t12', phase:'f3', date:'03/ago', title:'Lista de credenciamento de serviços', detail:'Nome + função (recepcionista, manutenção etc.).', dest:'→ expositor@sbpc.org.br'},
+  {id:'t13', phase:'f3', date:'03/ago', title:'Comprovação de quitação', detail:'Estande + eventual taxa de KVA.', dest:'Financeiro → SBPC/ML'},
+
+  {id:'t14', phase:'f4', date:'~20/ago', title:'Concluir o alvará sanitário', detail:'Emitir e pagar a taxa de R$ 60,91.', dest:'VP Central'},
+  {id:'t15', phase:'f4', date:'após alvará', title:'Enviar protocolo da vigilância', detail:'Obrigatório para participação.', dest:'→ expositor@sbpc.org.br'},
+  {id:'t16', phase:'f4', date:'agosto', title:'Contratar seguro de bens/terceiros', detail:'O seguro oficial cobre só áreas comuns.', dest:'Expositor'},
+  {id:'t17', phase:'f4', date:'agosto', title:'Contratar internet/telefone (se precisar)', detail:'Exclusivo Vero/ArteLink.', dest:'Vero/ArteLink'},
+  {id:'t18', phase:'f4', date:'agosto', title:'EPIs, extintor + operador, laudo antichamas', detail:'Capacete/luvas/calçado/cinto; extintor + profissional treinado; laudo + ART + NF de tecidos.', dest:'Montadora'},
+
+  {id:'t19', phase:'f5', date:'11–14/set', title:'Montagem do estande', detail:'Manter no estande cópia de projeto, RRT, Formulário 1 e alvará para fiscalização.', dest:'Montadora'},
+  {id:'t20', phase:'f5', date:'15–17/set', title:'Realização', detail:'Reposição só 7h–8h30; som/publicidade só após 18h (≤65 dB); bebida alcoólica após 17h.', dest:'Equipe'},
+  {id:'t21', phase:'f5', date:'17–19/set', title:'Desmontagem', detail:'17/09 19h → 19/09 15h. Entregar área limpa (fiscalização fotografa resíduos).', dest:'Montadora'},
+];
+
+const STORE_KEY = 'sbpc-painel-2026';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e){ state = {}; }
+let activeFilter = 'all';
+
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+function daysBetween(target){
+  const now = new Date();
+  const diff = Math.ceil((target - now) / (1000*60*60*24));
+  return diff;
+}
+
+function renderKPIs(){
+  const dl = daysBetween(DEADLINE);
+  const mt = daysBetween(MONTAGEM);
+  const elD = document.getElementById('kpi-deadline');
+  elD.textContent = dl > 0 ? dl : (dl === 0 ? 'Hoje' : 'Vencido');
+  document.getElementById('kpi-deadline-sub').textContent = dl > 0 ? 'dias para a entrega obrigatória' : (dl===0?'entrega é HOJE':'prazo encerrado');
+  if(dl <= 7 && dl >= 0){ elD.style.background='linear-gradient(90deg,#F87171,#FCA5A5)'; elD.style.webkitBackgroundClip='text'; elD.style.backgroundClip='text'; }
+  document.getElementById('kpi-montagem').textContent = mt > 0 ? mt : (mt===0?'Hoje':'—');
+
+  const total = TASKS.length;
+  const done = TASKS.filter(t => state[t.id]).length;
+  const pct = Math.round((done/total)*100);
+  document.getElementById('kpi-progress').textContent = pct + '%';
+  document.getElementById('kpi-bar').style.width = pct + '%';
+  document.getElementById('kpi-done').textContent = done;
+  document.getElementById('kpi-total').textContent = total;
+}
+
+function renderFilters(){
+  const box = document.getElementById('filters');
+  const opts = [{f:'all',l:'Todas'}].concat(PHASES.map(p=>({f:p.id,l:p.filter})));
+  box.innerHTML = opts.map(o=>`<button class="btn btn-ghost ${activeFilter===o.f?'active':''}" data-f="${o.f}">${o.l}</button>`).join('');
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ activeFilter=b.dataset.f; renderFilters(); renderPhases(); });
+}
+
+const CHECK_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+function renderPhases(){
+  const wrap = document.getElementById('phases');
+  const visible = activeFilter==='all' ? PHASES : PHASES.filter(p=>p.id===activeFilter);
+  wrap.innerHTML = visible.map(p=>{
+    const tasks = TASKS.filter(t=>t.phase===p.id);
+    const rows = tasks.map(t=>{
+      const done = !!state[t.id];
+      return `<div class="task ${done?'done':''}">
+        <label class="task-check">
+          <input type="checkbox" data-id="${t.id}" ${done?'checked':''}>
+          <span class="box">${CHECK_SVG}</span>
+        </label>
+        <div class="task-body">
+          <div class="task-top">
+            <span class="task-date" style="color:${p.color}">${t.date}</span>
+            <span class="task-title">${t.title}</span>
+          </div>
+          <div class="task-detail">${t.detail}</div>
+          <span class="task-dest">${t.dest}</span>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="phase">
+      <div class="phase-title"><span class="dot" style="background:${p.color};box-shadow:0 0 10px ${p.color}"></span>${p.label}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.onchange=()=>{ state[cb.dataset.id]=cb.checked; save(); renderKPIs(); renderPhases(); };
+  });
+}
+
+document.getElementById('reset-btn').onclick=()=>{ state={}; save(); renderKPIs(); renderPhases(); };
+
+renderKPIs();
+renderFilters();
+renderPhases();
+setInterval(renderKPIs, 60*60*1000);
+</script>
+</body>
+</html>
