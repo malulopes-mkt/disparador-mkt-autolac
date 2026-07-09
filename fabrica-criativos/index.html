@@ -152,14 +152,17 @@ textarea.input{line-height:1.6}
   </section>
 
   <!-- BRIEFING INPUT -->
+  <div class="alert alert-info" style="margin-bottom:var(--s4)">
+    💡 <b>Como escrever:</b> um tema por linha para itens curtos. Para <b>recurso novo</b> (que não está no catálogo), <b>cole a descrição completa</b> e <b>separe cada item com uma linha em branco</b> — o app usa exatamente o que você descreveu, sem trocar por outro módulo.
+  </div>
   <section class="grid-2" style="margin-bottom:var(--s6)">
     <div class="panel">
-      <label class="input-label" for="posts">📱 Temas das postagens (redes sociais) — 1 por linha</label>
-      <textarea class="input" id="posts" rows="7" placeholder="Backup automático na nuvem&#10;Liberação de exame pelo celular&#10;Integração com convênios&#10;..."></textarea>
+      <label class="input-label" for="posts">📱 Temas das postagens (redes sociais)</label>
+      <textarea class="input" id="posts" rows="7" placeholder="Backup automático na nuvem&#10;Liberação de exame pelo celular&#10;&#10;Monitoramento de Exames: acompanhamento em todas as etapas, da solicitação ao resultado, por grau de urgência e com SLA.&#10;&#10;(separe descrições completas por linha em branco)"></textarea>
       <p class="muted" style="margin-top:var(--s2)">Gera arte <b>3:4</b> (feed) e <b>9:16</b> (story/reels).</p>
     </div>
     <div class="panel">
-      <label class="input-label" for="wpp">💬 Temas das campanhas de WhatsApp — 1 por linha</label>
+      <label class="input-label" for="wpp">💬 Temas das campanhas de WhatsApp</label>
       <textarea class="input" id="wpp" rows="7" placeholder="Autolac v10: chega de servidor físico&#10;Oferta de migração sem custo&#10;Webinar: laboratório 100% na nuvem&#10;..."></textarea>
       <p class="muted" style="margin-top:var(--s2)">Gera arte <b>3:2</b> (1800×1200, padrão do disparo).</p>
     </div>
@@ -310,7 +313,21 @@ window.AUTOLAC = {
       visual:'ambiente de e-learning, tela de curso online com play e progresso abstratos, equipe de laboratório aprendendo, capacitação' },
     { nome:'Novos Módulos Autolac 10.0', cat:'Licenciamento',
       pitch:'Próxima geração — layout moderno 100% browser, gratuito pro cliente cloud. A evolução da plataforma.',
-      visual:'interface de software ultra-moderna flutuando no navegador, cards e gráficos limpos em glassmorphism azul/ciano, evolução e futuro, SEM texto legível' }
+      visual:'interface de software ultra-moderna flutuando no navegador, cards e gráficos limpos em glassmorphism azul/ciano, evolução e futuro, SEM texto legível' },
+
+    // ---- Módulos novos (geração 10.0) ----
+    { nome:'Atendimento com IA (Pré-atendimento)', cat:'Performance',
+      pitch:'IA lê e extrai dados de documentos na recepção (documentos pessoais, guia de exames) e insere no sistema — atendimento mais rápido, menos digitação e menos erro.',
+      visual:'recepção de laboratório moderna; documentos pessoais e guia de exame sendo escaneados e convertidos em dados digitais que fluem para a tela do sistema, halo de inteligência artificial, agilidade e precisão, tons azul e ciano' },
+    { nome:'Monitoramento de Exames', cat:'Performance',
+      pitch:'Acompanha o exame em todas as etapas, da solicitação ao resultado, por grau de urgência e com SLA — visibilidade total do fluxo do paciente.',
+      visual:'painel com uma linha do tempo de etapas do exame (solicitação → coleta → análise → resultado), marcadores de urgência e um medidor de SLA, sensação de controle e rastreabilidade total, dashboard abstrato azul/ciano sem texto legível' },
+    { nome:'CRM com WhatsApp + IA', cat:'Relacionamento',
+      pitch:'Funil de relacionamento no WhatsApp com bot humanizado que atende, lê documentos e entrega um briefing do contato (resumo, melhor horário de retorno, temperatura pra conversão). Enxerga o que está ativo, aguardando ou já em conversa com humano.',
+      visual:'painel de CRM com um funil/kanban de conversas de WhatsApp em colunas (ativo, aguardando, humano), avatar de bot com brilho de IA, cards de contato com um medidor de "temperatura" do lead, ambiente profissional, azul e ciano, sem texto legível' },
+    { nome:'Calculadora de Custos de Exames', cat:'Gestão',
+      pitch:'Analisa a composição de preço e a margem de cada exame numa tela só, comparando custo com convênios e laboratórios de apoio — decide o que enviar pro apoio e o que processar internamente.',
+      visual:'tela de análise de precificação com composição de custos e margens em gráficos comparativos, uma balança pesando "processar internamente" versus "enviar para o apoio", decisão financeira inteligente, dashboard abstrato azul/ciano sem texto legível' }
   ],
 
   // Concorrentes mapeados no battlecard (para campanhas de conquista/comparação)
@@ -349,7 +366,11 @@ window.AUTOLAC = {
     'ANIMALLIS': ['veterinario','pet','animal','animallis'],
     'Pesquisa de Satisfação': ['satisfacao','csat','avaliacao','feedback','nps'],
     'Plataforma Aprenda': ['capacitacao','curso','treinamento','aprenda','bpl'],
-    'Novos Módulos Autolac 10.0': ['autolac 10','autolac v10','versao 10','nova versao','100% browser']
+    'Novos Módulos Autolac 10.0': ['autolac 10','autolac v10','versao 10','nova versao','100% browser'],
+    'Atendimento com IA (Pré-atendimento)': ['pre-atendimento','pre atendimento','pré-atendimento','leitura de documento','extrai dados','extracao de documento','ocr','recepcao com ia','atendimento com ia','ia no atendimento','guia de exames','documentos pessoais'],
+    'Monitoramento de Exames': ['monitoramento de exames','acompanhamento de exames','sla de exame','grau de urgencia','solicitacao ao resultado','fluxo do exame','status do exame','rastreamento de exame'],
+    'CRM com WhatsApp + IA': ['crm com whatsapp','crm whatsapp','funil de relacionamento','bot humanizado','temperatura do contato','briefing do atendimento','funil de vendas whatsapp','crm com ia'],
+    'Calculadora de Custos de Exames': ['calculadora de custos','custo de exames','custo de exame','precificacao','precificação','margem de exame','composicao de preco','enviar para apoio','processar internamente','comparativo de precos']
   }
 };
 
@@ -406,11 +427,17 @@ const FORMATS = {
   '3:2':  {label:'Imagem 3:2 · 1800×1200', tip:'proporção 3:2 paisagem (final 1800×1200 px), amplo espaço negativo à direita para o texto', canvas:'1800 × 1200 px'}
 };
 
-function baseArtPrompt(theme){
-  const mod = matchModule(theme);
+const cap = s => (s||'').charAt(0).toUpperCase()+(s||'').slice(1);
+
+// item = {title, description}. Quando há description, ELA é a fonte da verdade.
+function baseArtPrompt(item){
+  if(item.description){
+    return `Gere uma imagem conceitual que represente FIELMENTE esta funcionalidade específica do Autolac (sistema para laboratórios de análises clínicas):\n"${item.description}"\nTraduza visualmente exatamente o que está descrito acima. NÃO substitua por outra funcionalidade, NÃO invente recursos que não foram descritos, NÃO associe a outro módulo. ${BRAND_STYLE} ${NO_TEXT}`;
+  }
+  const mod = matchModule(item.title);
   const cena = mod
     ? `Cena conceitual: ${mod.visual}. Contexto: laboratório de análises clínicas (módulo "${mod.nome}" do Autolac).`
-    : `Cena/imagem conceitual sobre o tema: "${theme}", no contexto de um laboratório de análises clínicas.`;
+    : `Cena/imagem conceitual sobre o tema: "${item.title}", no contexto de um laboratório de análises clínicas.`;
   return `${cena} ${BRAND_STYLE} ${NO_TEXT}`;
 }
 function fullArtPrompt(baseText, fmtKey){
@@ -419,69 +446,98 @@ function fullArtPrompt(baseText, fmtKey){
 }
 function claudeBrief(card){
   const head = `Crie a arte na identidade visual da marca Autolac (azul #2563EB / ciano #00D4FF, fundo escuro #020818, tipografia Poppins, cantos arredondados, glassmorphism).`;
+  const ctx = card.contexto ? `\n\nCONTEXTO DA FUNCIONALIDADE (respeite fielmente — NÃO troque por outro módulo/recurso, use exatamente o que está descrito):\n"${card.contexto}"` : '';
   const textos = `\n\nTexto para diagramar no espaço livre (vou subir a imagem do Gemini como fundo):\n• HEADLINE: ${card.headline}\n• CTA (botão): ${card.cta}\n• TEXTO DE APOIO: ${card.desc}\n\nMantenha legibilidade alta sobre a foto (overlay/sombra se precisar).`;
   if(card.channel === 'post'){
-    return `${head}\n\nCrie a peça em DOIS formatos (duas pranchas) para facilitar o projeto:\n1) Retrato / feed — 1080 × 1440 px (proporção 3:4)\n2) Stories / Reels — 1080 × 1920 px (proporção 9:16)\nUse o fundo gerado no Gemini correspondente a cada proporção e adapte a diagramação do texto a cada um.${textos}\n\nExporte as DUAS versões.`;
+    return `${head}${ctx}\n\nCrie a peça em DOIS formatos (duas pranchas) para facilitar o projeto:\n1) Retrato / feed — 1080 × 1440 px (proporção 3:4)\n2) Stories / Reels — 1080 × 1920 px (proporção 9:16)\nUse o fundo gerado no Gemini correspondente a cada proporção e adapte a diagramação do texto a cada um.${textos}\n\nExporte as DUAS versões.`;
   }
   const canvases = card.formats.map(f=>FORMATS[f].canvas).join(' OU ');
-  return `${head}\n\nTamanho do canvas — use o que corresponde à imagem que gerei no Gemini: ${canvases}.${textos}\n\nExporte no tamanho do canvas.`;
+  return `${head}${ctx}\n\nTamanho do canvas — use o que corresponde à imagem que gerei no Gemini: ${canvases}.${textos}\n\nExporte no tamanho do canvas.`;
 }
 
-/* ---------- COPY (rascunho via template + conhecimento Autolac) ---------- */
-function draftCopy(theme, channel){
-  const t = theme.trim();
-  const mod = matchModule(theme);
-  // se bateu com um módulo, usa o elevator pitch como base da copy
-  if(mod){
-    const benef = mod.pitch.replace(/\s*\(.*?win.*?\)\s*/gi,' ').trim();
-    if(channel === 'wpp'){
-      return {
-        headline: cap(mod.nome.split('(')[0].trim()).slice(0,40),
-        cta: 'Quero saber mais',
-        primary: `${benef} [Edite: abra com a dor do lab e mostre o custo invisível de não ter — horas da equipe, erro, glosa, retrabalho.]`.slice(0,350),
-        desc: cap(mod.nome.split('(')[0].trim()).slice(0,30)
-      };
-    }
-    return {
-      headline: cap(mod.nome.split('(')[0].trim()).slice(0,40),
-      cta: 'Saiba mais',
-      primary: `${benef} [Edite com o gancho da postagem + CTA.]`.slice(0,350),
-      desc: cap(mod.nome.split('(')[0].trim()).slice(0,30)
-    };
-  }
-  // fallback sem módulo
-  if(channel === 'wpp'){
+/* ---------- COPY (rascunho) ---------- */
+function draftCopy(item, channel){
+  const t = item.title.trim();
+  const ctaTxt = channel === 'wpp' ? 'Quero saber mais' : 'Saiba mais';
+  // 1) Se o usuário DESCREVEU o tema, a descrição manda — nada de casar com módulo.
+  if(item.description){
     return {
       headline: cap(t).slice(0,40),
-      cta: 'Quero saber mais',
-      primary: `Sobre "${t}": [edite com a dor do público + o benefício direto. Primeira linha qualifica o lead.]`,
-      desc: `${cap(t)} com o Autolac.`.slice(0,30)
+      cta: ctaTxt,
+      primary: item.description.slice(0,350),
+      desc: cap(t).slice(0,30),
+      contexto: item.description
     };
   }
+  // 2) Tema curto que casa com um módulo do catálogo → usa o pitch.
+  const mod = matchModule(t);
+  if(mod){
+    const benef = mod.pitch.replace(/\s*\(.*?win.*?\)\s*/gi,' ').trim();
+    return {
+      headline: cap(mod.nome.split('(')[0].trim()).slice(0,40),
+      cta: ctaTxt,
+      primary: (channel==='wpp'
+        ? `${benef} [Edite: abra com a dor do lab e o custo invisível de não ter — horas da equipe, erro, glosa, retrabalho.]`
+        : `${benef} [Edite com o gancho da postagem + CTA.]`).slice(0,350),
+      desc: cap(mod.nome.split('(')[0].trim()).slice(0,30),
+      contexto: ''
+    };
+  }
+  // 3) Tema curto solto (sem módulo, sem descrição).
   return {
     headline: cap(t).slice(0,40),
-    cta: 'Saiba mais',
-    primary: `${cap(t)} — [edite com o gancho da postagem e o CTA.]`,
-    desc: `${cap(t)}.`.slice(0,30)
+    cta: ctaTxt,
+    primary: `${cap(t)} — [edite com o gancho e o CTA. Se for um recurso novo, cole a descrição completa no briefing para o app respeitar.]`.slice(0,350),
+    desc: `${cap(t)}.`.slice(0,30),
+    contexto: ''
   };
 }
-const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ---------- PARSE DO BRIEFING ----------
+   Cada criativo é um "item" {title, description}.
+   - Se houver LINHAS EM BRANCO separando, cada bloco é 1 item (permite descrição longa/multilinha).
+   - Sem linhas em branco, cada linha é 1 item.
+   - Linha/bloco longo => vira DESCRIÇÃO (respeitada); título é derivado para o rótulo do card. */
+function parseItems(raw){
+  raw = (raw||'').replace(/\r/g,'');
+  const hasBlank = /\n[ \t]*\n/.test(raw.trim());
+  const blocks = (hasBlank ? raw.split(/\n[ \t]*\n+/) : raw.split(/\n/))
+    .map(b=>b.trim()).filter(Boolean);
+  return blocks.map(b=>{
+    const lines = b.split('\n').map(l=>l.trim()).filter(Boolean);
+    const first = lines[0] || '';
+    const multi = lines.length > 1;
+    if(multi){
+      return { title: shortLabel(first), description: lines.join(' ') };
+    }
+    if(first.length > 70){                 // parágrafo numa linha só = descrição
+      return { title: shortLabel(first), description: first };
+    }
+    return { title: first, description: '' }; // tema curto
+  });
+}
+function shortLabel(s){
+  s = s.trim();
+  if(s.length <= 60) return s;
+  const cut = s.slice(0,57);
+  return (cut.replace(/\s+\S*$/,'') || cut) + '…';
+}
 
 /* ---------- BUILD CARD OBJECTS ---------- */
 function buildCards(){
-  const posts = $('#posts').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  const wpp   = $('#wpp').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const posts = parseItems($('#posts').value);
+  const wpp   = parseItems($('#wpp').value);
   let id = 0;
   const out = [];
-  posts.forEach(t=>{
-    const c = draftCopy(t,'post');
-    const card = {id:id++, theme:t, channel:'post', formats:['3:4','9:16','3:2'], base:baseArtPrompt(t), ...c};
+  posts.forEach(it=>{
+    const c = draftCopy(it,'post');
+    const card = {id:id++, theme:it.title, description:it.description, channel:'post', formats:['3:4','9:16','3:2'], base:baseArtPrompt(it), ...c};
     card.claude = claudeBrief(card);
     out.push(card);
   });
-  wpp.forEach(t=>{
-    const c = draftCopy(t,'wpp');
-    const card = {id:id++, theme:t, channel:'wpp', formats:['3:2','9:16','3:4'], base:baseArtPrompt(t), ...c};
+  wpp.forEach(it=>{
+    const c = draftCopy(it,'wpp');
+    const card = {id:id++, theme:it.title, description:it.description, channel:'wpp', formats:['3:2','9:16','3:4'], base:baseArtPrompt(it), ...c};
     card.claude = claudeBrief(card);
     out.push(card);
   });

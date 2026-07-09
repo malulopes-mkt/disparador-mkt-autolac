@@ -92,7 +92,21 @@ window.AUTOLAC = {
       visual:'ambiente de e-learning, tela de curso online com play e progresso abstratos, equipe de laboratório aprendendo, capacitação' },
     { nome:'Novos Módulos Autolac 10.0', cat:'Licenciamento',
       pitch:'Próxima geração — layout moderno 100% browser, gratuito pro cliente cloud. A evolução da plataforma.',
-      visual:'interface de software ultra-moderna flutuando no navegador, cards e gráficos limpos em glassmorphism azul/ciano, evolução e futuro, SEM texto legível' }
+      visual:'interface de software ultra-moderna flutuando no navegador, cards e gráficos limpos em glassmorphism azul/ciano, evolução e futuro, SEM texto legível' },
+
+    // ---- Módulos novos (geração 10.0) ----
+    { nome:'Atendimento com IA (Pré-atendimento)', cat:'Performance',
+      pitch:'IA lê e extrai dados de documentos na recepção (documentos pessoais, guia de exames) e insere no sistema — atendimento mais rápido, menos digitação e menos erro.',
+      visual:'recepção de laboratório moderna; documentos pessoais e guia de exame sendo escaneados e convertidos em dados digitais que fluem para a tela do sistema, halo de inteligência artificial, agilidade e precisão, tons azul e ciano' },
+    { nome:'Monitoramento de Exames', cat:'Performance',
+      pitch:'Acompanha o exame em todas as etapas, da solicitação ao resultado, por grau de urgência e com SLA — visibilidade total do fluxo do paciente.',
+      visual:'painel com uma linha do tempo de etapas do exame (solicitação → coleta → análise → resultado), marcadores de urgência e um medidor de SLA, sensação de controle e rastreabilidade total, dashboard abstrato azul/ciano sem texto legível' },
+    { nome:'CRM com WhatsApp + IA', cat:'Relacionamento',
+      pitch:'Funil de relacionamento no WhatsApp com bot humanizado que atende, lê documentos e entrega um briefing do contato (resumo, melhor horário de retorno, temperatura pra conversão). Enxerga o que está ativo, aguardando ou já em conversa com humano.',
+      visual:'painel de CRM com um funil/kanban de conversas de WhatsApp em colunas (ativo, aguardando, humano), avatar de bot com brilho de IA, cards de contato com um medidor de "temperatura" do lead, ambiente profissional, azul e ciano, sem texto legível' },
+    { nome:'Calculadora de Custos de Exames', cat:'Gestão',
+      pitch:'Analisa a composição de preço e a margem de cada exame numa tela só, comparando custo com convênios e laboratórios de apoio — decide o que enviar pro apoio e o que processar internamente.',
+      visual:'tela de análise de precificação com composição de custos e margens em gráficos comparativos, uma balança pesando "processar internamente" versus "enviar para o apoio", decisão financeira inteligente, dashboard abstrato azul/ciano sem texto legível' }
   ],
 
   // Concorrentes mapeados no battlecard (para campanhas de conquista/comparação)
@@ -131,6 +145,10 @@ window.AUTOLAC = {
     'ANIMALLIS': ['veterinario','pet','animal','animallis'],
     'Pesquisa de Satisfação': ['satisfacao','csat','avaliacao','feedback','nps'],
     'Plataforma Aprenda': ['capacitacao','curso','treinamento','aprenda','bpl'],
-    'Novos Módulos Autolac 10.0': ['autolac 10','autolac v10','versao 10','nova versao','100% browser']
+    'Novos Módulos Autolac 10.0': ['autolac 10','autolac v10','versao 10','nova versao','100% browser'],
+    'Atendimento com IA (Pré-atendimento)': ['pre-atendimento','pre atendimento','pré-atendimento','leitura de documento','extrai dados','extracao de documento','ocr','recepcao com ia','atendimento com ia','ia no atendimento','guia de exames','documentos pessoais'],
+    'Monitoramento de Exames': ['monitoramento de exames','acompanhamento de exames','sla de exame','grau de urgencia','solicitacao ao resultado','fluxo do exame','status do exame','rastreamento de exame'],
+    'CRM com WhatsApp + IA': ['crm com whatsapp','crm whatsapp','funil de relacionamento','bot humanizado','temperatura do contato','briefing do atendimento','funil de vendas whatsapp','crm com ia'],
+    'Calculadora de Custos de Exames': ['calculadora de custos','custo de exames','custo de exame','precificacao','precificação','margem de exame','composicao de preco','enviar para apoio','processar internamente','comparativo de precos']
   }
 };
