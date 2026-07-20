@@ -17,58 +17,51 @@ export async function GET() {
       'Content-Type': 'application/json',
     }
 
-    // Primary: fetch all contact lists via ILS v3 object-type endpoint
-    let after: string | undefined
-    for (let page = 0; page < 50; page++) {
-      const url = `${HUBSPOT_API}/crm/v3/lists/object-type-id/0-1?limit=250${after ? `&after=${after}` : ''}`
-      const res = await fetch(url, { headers })
-      if (!res.ok) break
-
-      const data = await res.json()
-      const items = data.lists || data.results || []
-      for (const list of items) {
-        const id = String(list.listId || list.id)
-        listsMap.set(id, {
-          listId: id,
-          name: list.name,
-          listType: list.processingType === 'MANUAL' ? 'STATIC' : 'DYNAMIC',
-          size: list.size || 0,
-        })
-      }
-
-      const nextAfter = data.paging?.next?.after
-      if (!nextAfter || items.length === 0) break
-      after = nextAfter
+    function addList(list: Record<string, unknown>) {
+      const id = String(list.listId || list.id)
+      if (!id || listsMap.has(id)) return
+      listsMap.set(id, {
+        listId: id,
+        name: String(list.name || ''),
+        listType: (list.processingType === 'MANUAL') ? 'STATIC' : 'DYNAMIC',
+        size: (list.size as number) || 0,
+      })
     }
 
-    // Supplement: also fetch via search to catch any lists the ILS endpoint missed
+    // 1) Search endpoint (returns ALL list types, proven pagination)
     let offset = 0
-    let hasMore = true
-    while (hasMore) {
+    for (let page = 0; page < 100; page++) {
       const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/search`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ count: 500, offset, query: '' }),
+        body: JSON.stringify({ count: 250, offset, query: '' }),
       })
-
       if (!res.ok) break
 
       const data = await res.json()
-      for (const list of data.lists || []) {
-        const id = String(list.listId)
-        if (!listsMap.has(id)) {
-          listsMap.set(id, {
-            listId: id,
-            name: list.name,
-            listType: list.processingType === 'MANUAL' ? 'STATIC' : 'DYNAMIC',
-            size: list.size || 0,
-          })
-        }
-      }
+      const items = data.lists || []
+      for (const list of items) addList(list)
 
-      hasMore = data.hasMore === true
-      offset = data.offset || offset + 500
-      if (!(data.lists?.length > 0)) hasMore = false
+      if (!data.hasMore || items.length === 0) break
+      offset = data.offset ?? (offset + items.length)
+    }
+
+    // 2) ILS v3 by object type (contacts + companies) to catch anything search missed
+    for (const objectTypeId of ['0-1', '0-2']) {
+      let after: string | undefined
+      for (let page = 0; page < 50; page++) {
+        const url = `${HUBSPOT_API}/crm/v3/lists/object-type-id/${objectTypeId}?limit=250${after ? `&after=${after}` : ''}`
+        const res = await fetch(url, { headers })
+        if (!res.ok) break
+
+        const data = await res.json()
+        const items = data.lists || data.results || []
+        for (const list of items) addList(list)
+
+        const nextAfter = data.paging?.next?.after
+        if (!nextAfter || items.length === 0) break
+        after = nextAfter
+      }
     }
 
     const lists = Array.from(listsMap.values())
