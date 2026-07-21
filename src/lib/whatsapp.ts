@@ -15,11 +15,36 @@ async function getConfig() {
 export interface TemplateComponent {
   type: 'header' | 'body' | 'button'
   parameters: (
-    | { type: 'text'; text: string }
+    | { type: 'text'; text: string; parameter_name?: string }
     | { type: 'image'; image: { link: string } | { id: string } }
     | { type: 'video'; video: { link: string } | { id: string } }
     | { type: 'document'; document: { link: string } | { id: string } }
   )[]
+}
+
+// Builds the body component for templates with variables ({{1}} numeric or
+// {{name}} named). Meta rejects sends when param count doesn't match (#132000).
+export function buildBodyComponent(bodyText: string, fillValue: string): TemplateComponent | null {
+  const seen = new Set<string>()
+  const placeholders: string[] = []
+  const regex = /\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g
+  let match
+  while ((match = regex.exec(bodyText))) {
+    if (!seen.has(match[1])) {
+      seen.add(match[1])
+      placeholders.push(match[1])
+    }
+  }
+  if (placeholders.length === 0) return null
+
+  return {
+    type: 'body',
+    parameters: placeholders.map(ph =>
+      /^\d+$/.test(ph)
+        ? { type: 'text' as const, text: fillValue }
+        : { type: 'text' as const, parameter_name: ph, text: fillValue }
+    ),
+  }
 }
 
 const MEDIA_ID_PREFIX = 'mid:'
