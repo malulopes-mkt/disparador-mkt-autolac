@@ -284,6 +284,23 @@ export interface IncomingMessage {
   video?: { id: string; caption?: string; mime_type?: string }
   document?: { id: string; filename?: string; caption?: string; mime_type?: string }
   sticker?: { id: string; mime_type?: string }
+  contacts?: {
+    name?: { formatted_name?: string; first_name?: string; last_name?: string }
+    phones?: { phone?: string; wa_id?: string; type?: string }[]
+  }[]
+}
+
+// Formats a shared contact card into readable text (name + numbers)
+export function formatContactsMessage(contacts: IncomingMessage['contacts']): string | null {
+  if (!contacts?.length) return null
+  const lines = contacts.map(c => {
+    const name = c.name?.formatted_name
+      || [c.name?.first_name, c.name?.last_name].filter(Boolean).join(' ')
+      || 'Contato'
+    const phones = (c.phones || []).map(p => p.phone || p.wa_id).filter(Boolean).join(', ')
+    return phones ? `📇 ${name}\n${phones}` : `📇 ${name}`
+  })
+  return lines.join('\n\n')
 }
 
 export interface StatusUpdate {

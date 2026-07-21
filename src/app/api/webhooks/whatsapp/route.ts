@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyWebhook, verifyWebhookSignature, parseWebhookPayload } from '@/lib/whatsapp'
+import { verifyWebhook, verifyWebhookSignature, parseWebhookPayload, formatContactsMessage } from '@/lib/whatsapp'
 import { searchContactByPhone, createCommunicationNote } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { classifyConversation } from '@/lib/classify'
@@ -57,7 +57,8 @@ export async function POST(req: NextRequest) {
       const mediaType = mediaObj ? msg.type : null
       const mediaId = mediaObj?.id || null
       const caption = (msg.image?.caption || msg.video?.caption || msg.document?.caption)
-      const text = msg.text?.body || caption || `[${msg.type}]`
+      const contactCard = formatContactsMessage(msg.contacts)
+      const text = msg.text?.body || caption || contactCard || `[${msg.type}]`
 
       let contactName: string | null = null
       let hubspotContactId: string | null = null
