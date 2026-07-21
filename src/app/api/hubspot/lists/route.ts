@@ -28,41 +28,23 @@ export async function GET() {
       })
     }
 
-    // 1) Legacy v1 API (most reliable, returns all contact lists)
-    let v1Offset = 0
-    for (let page = 0; page < 100; page++) {
-      const res = await fetch(
-        `${HUBSPOT_API}/contacts/v1/lists?count=250&offset=${v1Offset}`,
-        { headers },
-      )
+    // 1) ILS v3 contact lists (objectTypeId 0-1) with pagination
+    let after: string | undefined
+    for (let page = 0; page < 50; page++) {
+      const url = `${HUBSPOT_API}/crm/v3/lists/object-type-id/0-1?limit=250${after ? `&after=${after}` : ''}`
+      const res = await fetch(url, { headers })
       if (!res.ok) break
 
       const data = await res.json()
-      for (const list of data.lists || []) addList(list)
+      const items = data.lists || data.results || []
+      for (const list of items) addList(list)
 
-      if (!data['has-more'] || !(data.lists?.length > 0)) break
-      v1Offset = data.offset ?? (v1Offset + 250)
+      const nextAfter = data.paging?.next?.after
+      if (!nextAfter || items.length === 0) break
+      after = nextAfter
     }
 
-    // 2) ILS v3 by object type (contacts, companies, deals, tickets)
-    for (const objectTypeId of ['0-1', '0-2', '0-3', '0-5']) {
-      let after: string | undefined
-      for (let page = 0; page < 50; page++) {
-        const url = `${HUBSPOT_API}/crm/v3/lists/object-type-id/${objectTypeId}?limit=250${after ? `&after=${after}` : ''}`
-        const res = await fetch(url, { headers })
-        if (!res.ok) break
-
-        const data = await res.json()
-        const items = data.lists || data.results || []
-        for (const list of items) addList(list)
-
-        const nextAfter = data.paging?.next?.after
-        if (!nextAfter || items.length === 0) break
-        after = nextAfter
-      }
-    }
-
-    // 3) Search endpoint as final supplement
+    // 2) Search supplement — only add contact lists (objectTypeId 0-1)
     let offset = 0
     for (let page = 0; page < 100; page++) {
       const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/search`, {
@@ -74,7 +56,9 @@ export async function GET() {
 
       const data = await res.json()
       const items = data.lists || []
-      for (const list of items) addList(list)
+      for (const list of items) {
+        if (String(list.objectTypeId) === '0-1') addList(list)
+      }
 
       if (!data.hasMore || items.length === 0) break
       offset = data.offset ?? (offset + items.length)
