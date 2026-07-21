@@ -20,6 +20,7 @@ interface Message {
   mediaId: string | null
   classifyPontos: string | null
   classifyProximo: string | null
+  numberMismatch?: boolean
 }
 
 export default function ChatPage({ params }: { params: { phone: string } }) {
@@ -146,6 +147,7 @@ export default function ChatPage({ params }: { params: { phone: string } }) {
                 classifyTom={msg.classifyTom}
                 classifyPontos={msg.classifyPontos}
                 classifyProximo={msg.classifyProximo}
+                numberMismatch={msg.numberMismatch}
               />
             ))}
             <div ref={bottomRef} />

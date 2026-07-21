@@ -452,10 +452,10 @@ export async function downloadMedia(mediaId: string): Promise<{ buffer: Buffer; 
 }
 
 export function parseWebhookPayload(body: Record<string, unknown>): {
-  messages: IncomingMessage[]
+  messages: (IncomingMessage & { receivedOnPhoneId?: string })[]
   statuses: StatusUpdate[]
 } {
-  const messages: IncomingMessage[] = []
+  const messages: (IncomingMessage & { receivedOnPhoneId?: string })[] = []
   const statuses: StatusUpdate[] = []
 
   const entries = (body.entry as Array<Record<string, unknown>>) || []
@@ -464,8 +464,10 @@ export function parseWebhookPayload(body: Record<string, unknown>): {
     for (const change of changes) {
       const value = change.value as Record<string, unknown> | undefined
       if (!value) continue
+      const metadata = value.metadata as { phone_number_id?: string } | undefined
+      const receivedOnPhoneId = metadata?.phone_number_id
       const msgs = (value.messages as IncomingMessage[]) || []
-      messages.push(...msgs)
+      messages.push(...msgs.map(m => ({ ...m, receivedOnPhoneId })))
       const sts = (value.statuses as StatusUpdate[]) || []
       statuses.push(...sts)
     }

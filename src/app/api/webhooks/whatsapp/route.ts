@@ -5,6 +5,7 @@ import { verifyWebhook, verifyWebhookSignature, parseWebhookPayload, formatConta
 import { searchContactByPhone, createCommunicationNote } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { classifyConversation } from '@/lib/classify'
+import { getSetting } from '@/lib/settings'
 
 // Bloqueante #10: Limite de tamanho do body (1MB)
 const MAX_BODY_SIZE = 1_000_000
@@ -40,6 +41,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = JSON.parse(rawBody)
     const { messages, statuses } = parseWebhookPayload(body)
+
+    // Diagnostic: detect messages arriving on a different number than the one we send from
+    const sendingPhoneId = await getSetting('META_PHONE_NUMBER_ID')
 
     for (const msg of messages) {
       // Bloqueante #5: Idempotência — checar waMessageId ANTES de processar
@@ -81,6 +85,16 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      const numberMismatch = Boolean(
+        msg.receivedOnPhoneId && sendingPhoneId && msg.receivedOnPhoneId !== sendingPhoneId
+      )
+      if (numberMismatch) {
+        console.warn(
+          `[webhook] Mensagem de ${phone} recebida no numero ${msg.receivedOnPhoneId}, ` +
+          `mas o envio usa ${sendingPhoneId} — janela de 24h nao vale para envios deste app`
+        )
+      }
+
       const inboundMsg = await prisma.message.create({
         data: {
           contactPhone: phone,
@@ -92,6 +106,8 @@ export async function POST(req: NextRequest) {
           waMessageId: msg.id,
           mediaType,
           mediaId,
+          receivedOnPhoneId: msg.receivedOnPhoneId || null,
+          numberMismatch,
           timestamp: new Date(Number(msg.timestamp) * 1000),
         },
       })

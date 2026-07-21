@@ -49,6 +49,8 @@ model Message {
   classifyTom      String?
   classifyPontos   String?
   classifyProximo  String?
+  receivedOnPhoneId String?
+  numberMismatch   Boolean  @default(false)
   timestamp        DateTime @default(now())
 
   @@index([contactPhone, timestamp])

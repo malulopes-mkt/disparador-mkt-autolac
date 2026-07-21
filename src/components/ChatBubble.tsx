@@ -12,6 +12,7 @@ interface ChatBubbleProps {
   classifyTom?: string | null
   classifyPontos?: string | null
   classifyProximo?: string | null
+  numberMismatch?: boolean
 }
 
 function StatusIcon({ status }: { status?: string }) {
@@ -83,7 +84,7 @@ function MediaContent({ mediaType, mediaId }: { mediaType: string; mediaId: stri
   return null
 }
 
-export default function ChatBubble({ body, direction, status, timestamp, templateName, mediaType, mediaId, classifyTipo, classifyTom, classifyPontos, classifyProximo }: ChatBubbleProps) {
+export default function ChatBubble({ body, direction, status, timestamp, templateName, mediaType, mediaId, classifyTipo, classifyTom, classifyPontos, classifyProximo, numberMismatch }: ChatBubbleProps) {
   const isOutbound = direction === 'outbound'
   const tz = 'America/Sao_Paulo'
   const time = new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tz })
@@ -126,6 +127,15 @@ export default function ChatBubble({ body, direction, status, timestamp, templat
             {isOutbound && <span className="text-[11px]"><StatusIcon status={status} /></span>}
           </div>
         </div>
+
+        {!isOutbound && numberMismatch && (
+          <div
+            className="mt-1 px-3 py-1.5 rounded-lg text-[10px] text-amber-300"
+            style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
+          >
+            ⚠️ Recebida em outro número WhatsApp da empresa — texto livre pode falhar; use template para responder por este app
+          </div>
+        )}
 
         {hasClassification && (
           <div
