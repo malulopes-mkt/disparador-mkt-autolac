@@ -121,9 +121,14 @@ export interface SendResult {
 
 export async function sendText(
   to: string,
-  text: string
+  text: string,
+  fromPhoneNumberId?: string
 ): Promise<SendResult> {
-  const { phoneNumberId, accessToken } = await getConfig()
+  const config = await getConfig()
+  const accessToken = config.accessToken
+  // Reply from the same number the customer's message arrived on, so the
+  // 24h session window applies (avoids Meta "Re-engagement message" error)
+  const phoneNumberId = fromPhoneNumberId || config.phoneNumberId
   const digits = to.replace(/\D/g, '')
 
   const body = {

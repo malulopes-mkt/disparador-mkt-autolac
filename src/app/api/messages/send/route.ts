@@ -15,7 +15,15 @@ export async function POST(req: NextRequest) {
   const normalizedPhone = normalizePhone(phone)
 
   try {
-    const result = await sendText(normalizedPhone, message.trim())
+    // Reply from the same business number the customer's last message
+    // arrived on, so the 24h session window applies to this send
+    const lastInbound = await prisma.message.findFirst({
+      where: { contactPhone: normalizedPhone, direction: 'inbound', receivedOnPhoneId: { not: null } },
+      orderBy: { timestamp: 'desc' },
+      select: { receivedOnPhoneId: true },
+    })
+
+    const result = await sendText(normalizedPhone, message.trim(), lastInbound?.receivedOnPhoneId || undefined)
     const waMessageId = result.messages?.[0]?.id || null
 
     const existing = await prisma.message.findFirst({
