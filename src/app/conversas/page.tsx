@@ -13,12 +13,14 @@ interface Conversation {
   totalMessages: number
   inboundCount: number
   outboundCount: number
+  numbers: string[]
 }
 
 export default function ConversasPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [numberFilter, setNumberFilter] = useState<string | null>(null)
 
   useEffect(() => {
     const params = search ? `?search=${encodeURIComponent(search)}` : ''
@@ -27,6 +29,11 @@ export default function ConversasPage() {
       .then(setConversations)
       .finally(() => setLoading(false))
   }, [search])
+
+  const allNumbers = Array.from(new Set(conversations.flatMap(c => c.numbers || []))).sort()
+  const filtered = numberFilter
+    ? conversations.filter(c => (c.numbers || []).includes(numberFilter))
+    : conversations
 
   return (
     <div>
@@ -47,9 +54,35 @@ export default function ConversasPage() {
         />
       </div>
 
+      {allNumbers.length > 1 && (
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setNumberFilter(null)}
+            className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+            style={numberFilter === null
+              ? { background: 'rgba(37,99,235,0.4)', border: '1px solid rgba(37,99,235,0.6)', color: '#fff' }
+              : { background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(156,163,175,1)' }}
+          >
+            Todos os numeros
+          </button>
+          {allNumbers.map(num => (
+            <button
+              key={num}
+              onClick={() => setNumberFilter(num)}
+              className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+              style={numberFilter === num
+                ? { background: 'rgba(37,99,235,0.4)', border: '1px solid rgba(37,99,235,0.6)', color: '#fff' }
+                : { background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(156,163,175,1)' }}
+            >
+              {num}
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <PageLoader />
-      ) : conversations.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="glass-card p-12 text-center">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(37,99,235,0.1)' }}>
             <svg className="w-8 h-8 text-blue-500/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
@@ -58,12 +91,12 @@ export default function ConversasPage() {
         </div>
       ) : (
         <div className="glass-card overflow-hidden">
-          {conversations.map((conv, i) => (
+          {filtered.map((conv, i) => (
             <Link
               key={conv.phone}
               href={`/conversas/${encodeURIComponent(conv.phone)}`}
               className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors"
-              style={i < conversations.length - 1 ? { borderBottom: '1px solid var(--glass-border)' } : {}}
+              style={i < filtered.length - 1 ? { borderBottom: '1px solid var(--glass-border)' } : {}}
             >
               <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-semibold text-blue-300 shrink-0" style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.25)' }}>
                 {(conv.name || conv.phone.slice(-4))[0].toUpperCase()}
@@ -84,6 +117,11 @@ export default function ConversasPage() {
                     {conv.lastMessage}
                   </p>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
+                    {allNumbers.length > 1 && (conv.numbers || []).map(num => (
+                      <span key={num} className="text-[10px] px-2 py-0.5 rounded-full text-cyan-300" style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}>
+                        {num}
+                      </span>
+                    ))}
                     <span className="text-xs text-gray-600">{conv.totalMessages} msgs</span>
                     {conv.inboundCount > 0 && (
                       <span className="w-5 h-5 text-[10px] font-semibold rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)' }}>

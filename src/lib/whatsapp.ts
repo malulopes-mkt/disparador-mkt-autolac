@@ -428,6 +428,29 @@ export async function getTemplateAnalytics(
   }
 }
 
+// Resolves a phone_number_id to its display number (e.g. "+55 37 9173-9751"),
+// cached in memory — the mapping never changes for a given id
+const phoneDisplayCache = new Map<string, string>()
+
+export async function getPhoneNumberDisplay(phoneNumberId: string): Promise<string | null> {
+  const cached = phoneDisplayCache.get(phoneNumberId)
+  if (cached) return cached
+
+  const { accessToken } = await getConfig()
+  if (!accessToken) return null
+
+  const res = await fetch(`${GRAPH_URL}/${phoneNumberId}?fields=display_phone_number`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  const display = data.display_phone_number as string | undefined
+  if (!display) return null
+
+  phoneDisplayCache.set(phoneNumberId, display)
+  return display
+}
+
 export async function getMediaUrl(mediaId: string): Promise<{ url: string; mimeType: string } | null> {
   const { accessToken } = await getConfig()
   if (!accessToken) return null
