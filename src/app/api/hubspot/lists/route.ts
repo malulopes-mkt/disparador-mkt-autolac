@@ -57,6 +57,40 @@ export async function GET(req: NextRequest) {
       offset = data.offset ?? (offset + items.length)
     }
 
+    // The search index lags behind for freshly created lists. List ids are
+    // sequential, so probe ids above the highest one search returned —
+    // GET by id reads directly (no index) and finds new lists immediately.
+    let probedFound = 0
+    const knownIds = Array.from(listsMap.keys()).map(Number).filter(n => !isNaN(n))
+    const maxId = knownIds.length ? Math.max(...knownIds) : 0
+    if (maxId > 0) {
+      const PROBE_RANGE = 120
+      const CHUNK = 10
+      let missesInARow = 0
+      for (let start = maxId + 1; start <= maxId + PROBE_RANGE && missesInARow < 30; start += CHUNK) {
+        const chunkIds = Array.from({ length: CHUNK }, (_, i) => start + i)
+        const results = await Promise.all(chunkIds.map(async id => {
+          const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/${id}?includeFilters=false`, { headers })
+          if (!res.ok) return null
+          const data = await res.json()
+          return data.list || data
+        }))
+        for (const list of results) {
+          if (!list?.listId) { missesInARow++; continue }
+          missesInARow = 0
+          const id = String(list.listId)
+          if (listsMap.has(id)) continue
+          probedFound++
+          listsMap.set(id, {
+            listId: id,
+            name: String(list.name || ''),
+            listType: list.processingType === 'MANUAL' ? 'STATIC' : 'DYNAMIC',
+            size: Number(list.additionalProperties?.hs_list_size) || list.size || 0,
+          })
+        }
+      }
+    }
+
     const lists = Array.from(listsMap.values())
     lists.sort((a, b) => a.name.localeCompare(b.name))
 
@@ -66,6 +100,7 @@ export async function GET(req: NextRequest) {
         searchTotal,
         pagesFetched,
         lastHasMore,
+        probedFound,
         ids: lists.map(l => Number(l.listId)).sort((a, b) => a - b),
       })
     }
