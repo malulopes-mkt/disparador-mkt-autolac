@@ -22,7 +22,13 @@ export async function GET() {
       const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/search`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ count: 250, offset, query: '' }),
+        body: JSON.stringify({
+          count: 250,
+          offset,
+          query: '',
+          // hs_list_size is only returned when explicitly requested
+          additionalProperties: ['hs_list_size'],
+        }),
       })
       if (!res.ok) break
 
@@ -35,7 +41,7 @@ export async function GET() {
           listId: id,
           name: String(list.name || ''),
           listType: list.processingType === 'MANUAL' ? 'STATIC' : 'DYNAMIC',
-          size: list.size || 0,
+          size: Number(list.additionalProperties?.hs_list_size) || list.size || 0,
         })
       }
 
