@@ -1,10 +1,11 @@
 export const dynamic = 'force-dynamic'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getSetting } from '@/lib/settings'
 
 const HUBSPOT_API = 'https://api.hubapi.com'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const debug = req.nextUrl.searchParams.get('debug') === '1'
   const token = await getSetting('HUBSPOT_ACCESS_TOKEN')
   if (!token) {
     return NextResponse.json({ error: 'HUBSPOT_ACCESS_TOKEN not configured' }, { status: 500 })
@@ -16,6 +17,10 @@ export async function GET() {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     }
+
+    let searchTotal: number | null = null
+    let pagesFetched = 0
+    let lastHasMore: boolean | null = null
 
     let offset = 0
     for (let page = 0; page < 100; page++) {
@@ -33,6 +38,9 @@ export async function GET() {
       if (!res.ok) break
 
       const data = await res.json()
+      if (searchTotal === null) searchTotal = data.total ?? null
+      pagesFetched++
+      lastHasMore = data.hasMore ?? null
       const items = data.lists || []
       for (const list of items) {
         const id = String(list.listId || list.id)
@@ -51,6 +59,17 @@ export async function GET() {
 
     const lists = Array.from(listsMap.values())
     lists.sort((a, b) => a.name.localeCompare(b.name))
+
+    if (debug) {
+      return NextResponse.json({
+        fetched: lists.length,
+        searchTotal,
+        pagesFetched,
+        lastHasMore,
+        ids: lists.map(l => Number(l.listId)).sort((a, b) => a - b),
+      })
+    }
+
     return NextResponse.json(lists)
   } catch (err) {
     console.error('HubSpot lists error:', err)
