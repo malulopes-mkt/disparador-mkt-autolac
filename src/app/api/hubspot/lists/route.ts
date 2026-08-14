@@ -64,10 +64,12 @@ export async function GET(req: NextRequest) {
     const knownIds = Array.from(listsMap.keys()).map(Number).filter(n => !isNaN(n))
     const maxId = knownIds.length ? Math.max(...knownIds) : 0
     if (maxId > 0) {
-      const PROBE_RANGE = 120
+      // Portal ids can jump by ~50 between consecutive lists, so tolerate
+      // long runs of misses before giving up
+      const PROBE_RANGE = 300
       const CHUNK = 10
       let missesInARow = 0
-      for (let start = maxId + 1; start <= maxId + PROBE_RANGE && missesInARow < 30; start += CHUNK) {
+      for (let start = maxId + 1; start <= maxId + PROBE_RANGE && missesInARow < 100; start += CHUNK) {
         const chunkIds = Array.from({ length: CHUNK }, (_, i) => start + i)
         const results = await Promise.all(chunkIds.map(async id => {
           const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/${id}?includeFilters=false`, { headers })
