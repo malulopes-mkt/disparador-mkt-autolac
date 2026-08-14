@@ -95,12 +95,32 @@ export async function GET(req: NextRequest) {
     lists.sort((a, b) => a.name.localeCompare(b.name))
 
     if (debug) {
+      // Self-test: GET by id must work for a list we know exists
+      let probeSelfTest: unknown = null
+      if (maxId > 0) {
+        const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/${maxId}?includeFilters=false`, { headers })
+        probeSelfTest = { id: maxId, status: res.status, ok: res.ok }
+      }
+
+      // Optional: look a list up by exact name (strongly consistent endpoint)
+      let nameLookup: unknown = null
+      const nameParam = req.nextUrl.searchParams.get('name')
+      if (nameParam) {
+        const res = await fetch(
+          `${HUBSPOT_API}/crm/v3/lists/object-type-id/0-1/name/${encodeURIComponent(nameParam)}`,
+          { headers },
+        )
+        nameLookup = { name: nameParam, status: res.status, body: await res.json().catch(() => null) }
+      }
+
       return NextResponse.json({
         fetched: lists.length,
         searchTotal,
         pagesFetched,
         lastHasMore,
         probedFound,
+        probeSelfTest,
+        nameLookup,
         ids: lists.map(l => Number(l.listId)).sort((a, b) => a - b),
       })
     }
