@@ -63,6 +63,25 @@ model Setting {
   value String
 }
 
+model ConversionEvent {
+  id               String   @id @default(cuid())
+  platform         String   @default("openai")
+  eventId          String
+  eventType        String
+  hubspotContactId String?
+  obref            String?
+  emailHash        String?
+  status           String   @default("pending")
+  attempts         Int      @default(0)
+  failReason       String?
+  occurredAt       DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([platform, eventId])
+  @@index([status])
+}
+
 model Template {
   id             String   @id @default(cuid())
   metaTemplateId String   @unique
