@@ -12,18 +12,6 @@ const ALLOWED_KEYS = [
   'INTERNAL_PHONES',
   'META_APP_SECRET',
   'N8N_WEBHOOK_TOKEN',
-  'OPENAI_ADS_PIXEL_ID',
-  'OPENAI_ADS_API_KEY',
-]
-
-// Exibidos parcialmente ocultos; um valor mascarado nunca e gravado de volta.
-const MASKED_KEYS = [
-  'META_ACCESS_TOKEN',
-  'HUBSPOT_ACCESS_TOKEN',
-  'CLAUDE_API_KEY',
-  'META_APP_SECRET',
-  'N8N_WEBHOOK_TOKEN',
-  'OPENAI_ADS_API_KEY',
 ]
 
 export async function GET() {
@@ -31,7 +19,7 @@ export async function GET() {
   const map: Record<string, string> = {}
   for (const s of settings) {
     // Mask sensitive values for display
-    if (MASKED_KEYS.includes(s.key) && s.value) {
+    if (['META_ACCESS_TOKEN', 'HUBSPOT_ACCESS_TOKEN', 'CLAUDE_API_KEY', 'META_APP_SECRET', 'N8N_WEBHOOK_TOKEN'].includes(s.key) && s.value) {
       map[s.key] = s.value.length > 8
         ? s.value.slice(0, 4) + '****' + s.value.slice(-4)
         : '****'
@@ -45,7 +33,7 @@ export async function GET() {
     if (!map[key]) {
       const envVal = process.env[key]
       if (envVal && envVal !== 'placeholder') {
-        if (MASKED_KEYS.includes(key)) {
+        if (['META_ACCESS_TOKEN', 'HUBSPOT_ACCESS_TOKEN', 'CLAUDE_API_KEY', 'META_APP_SECRET', 'N8N_WEBHOOK_TOKEN'].includes(key)) {
           map[key] = envVal.length > 8 ? envVal.slice(0, 4) + '****' + envVal.slice(-4) : '****'
         } else {
           map[key] = envVal

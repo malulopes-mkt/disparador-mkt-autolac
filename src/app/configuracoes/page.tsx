@@ -52,14 +52,6 @@ const SECTIONS = [
       { key: 'META_APP_SECRET', label: 'App Secret', placeholder: 'Cole o App Secret do Meta', type: 'password', help: 'Encontre em developers.facebook.com > App > Configuracoes > Basico' },
     ],
   },
-  {
-    title: 'ChatGPT Ads (OpenAI)',
-    description: 'Credenciais da Conversions API para registrar leads como conversao.',
-    fields: [
-      { key: 'OPENAI_ADS_PIXEL_ID', label: 'Pixel ID', placeholder: 'TeRga9E6RcE1XgJhLTCdaj', type: 'text', help: 'Ads Manager > Conversoes > Fonte de dados. Nao e segredo' },
-      { key: 'OPENAI_ADS_API_KEY', label: 'API Key', placeholder: 'Cole a chave de conversao', type: 'password', help: 'Ads Manager > Conversoes > evento > aba API de Conversoes > Criar chave de conversao' },
-    ],
-  },
 ]
 
 export default function ConfiguracoesPage() {
