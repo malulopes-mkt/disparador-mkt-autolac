@@ -64,12 +64,14 @@ export async function GET(req: NextRequest) {
     const knownIds = Array.from(listsMap.keys()).map(Number).filter(n => !isNaN(n))
     const maxId = knownIds.length ? Math.max(...knownIds) : 0
     if (maxId > 0) {
-      // Portal ids can jump by ~50 between consecutive lists, so tolerate
-      // long runs of misses before giving up
-      const PROBE_RANGE = 300
+      // Rolling window: every hit extends the horizon, so the probe keeps up
+      // even if the search index stays stale for months. Stops after
+      // PROBE_WINDOW empty ids past the last hit (hard cap as safety).
+      const PROBE_WINDOW = 300
+      const PROBE_HARD_CAP = 3000
       const CHUNK = 10
-      let missesInARow = 0
-      for (let start = maxId + 1; start <= maxId + PROBE_RANGE && missesInARow < 100; start += CHUNK) {
+      let horizon = maxId + PROBE_WINDOW
+      for (let start = maxId + 1; start <= horizon && start <= maxId + PROBE_HARD_CAP; start += CHUNK) {
         const chunkIds = Array.from({ length: CHUNK }, (_, i) => start + i)
         const results = await Promise.all(chunkIds.map(async id => {
           const res = await fetch(`${HUBSPOT_API}/crm/v3/lists/${id}?includeFilters=false`, { headers })
@@ -78,9 +80,9 @@ export async function GET(req: NextRequest) {
           return data.list || data
         }))
         for (const list of results) {
-          if (!list?.listId) { missesInARow++; continue }
-          missesInARow = 0
+          if (!list?.listId) continue
           const id = String(list.listId)
+          horizon = Math.max(horizon, Number(id) + PROBE_WINDOW)
           if (listsMap.has(id)) continue
           probedFound++
           listsMap.set(id, {
