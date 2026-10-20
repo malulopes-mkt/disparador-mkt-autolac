@@ -128,6 +128,32 @@ export async function saveListsCache(lists: HubSpotList[]): Promise<string> {
   return syncedAt
 }
 
+// In-app scheduler: refreshes the segment cache periodically so the panel
+// always has fresh data without anyone (or N8N) having to trigger it.
+const LISTS_SYNC_INTERVAL_MS = 30 * 60 * 1000
+
+let syncSchedulerStarted = false
+
+export function startHubspotListsSync() {
+  if (syncSchedulerStarted) return
+  syncSchedulerStarted = true
+  console.log('[lists-sync] Starting (every 30 minutes)')
+
+  const run = async () => {
+    try {
+      const { lists, stats } = await fetchAllHubspotLists()
+      await saveListsCache(lists)
+      console.log(`[lists-sync] ${lists.length} segmentos (search: ${stats.searchTotal}, probe: +${stats.probedFound})`)
+    } catch (err) {
+      console.error('[lists-sync] Error:', err)
+    }
+  }
+
+  // First run shortly after boot (lets the DB/settings come up first)
+  setTimeout(run, 15_000)
+  setInterval(run, LISTS_SYNC_INTERVAL_MS)
+}
+
 export async function readListsCache(): Promise<{ lists: HubSpotList[]; syncedAt: string | null } | null> {
   const row = await prisma.setting.findUnique({ where: { key: CACHE_KEY } }).catch(() => null)
   if (!row?.value) return null
