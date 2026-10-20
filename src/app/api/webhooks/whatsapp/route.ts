@@ -6,11 +6,37 @@ import { searchContactByPhone, createCommunicationNote } from '@/lib/hubspot'
 import { normalizePhone, isInternalPhone } from '@/lib/utils'
 import { classifyConversation } from '@/lib/classify'
 import { getSetting } from '@/lib/settings'
+import { fetchAllHubspotLists, saveListsCache } from '@/lib/hubspot-lists'
 
 // Bloqueante #10: Limite de tamanho do body (1MB)
 const MAX_BODY_SIZE = 1_000_000
 
 export async function GET(req: NextRequest) {
+  // Ação extra para o N8N (este é o único path liberado no SSO proxy):
+  // ?action=lists-sync&token=<N8N_WEBHOOK_TOKEN> sincroniza os segmentos
+  // do HubSpot para o cache. Não interfere na verificação da Meta abaixo.
+  if (req.nextUrl.searchParams.get('action') === 'lists-sync') {
+    const provided = req.headers.get('x-webhook-token') || req.nextUrl.searchParams.get('token')
+    const expected = await getSetting('N8N_WEBHOOK_TOKEN')
+    if (!provided || !expected || provided !== expected) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    try {
+      const { lists, stats } = await fetchAllHubspotLists()
+      const syncedAt = await saveListsCache(lists)
+      return NextResponse.json({
+        ok: true,
+        count: lists.length,
+        searchTotal: stats.searchTotal,
+        probedFound: stats.probedFound,
+        syncedAt,
+      })
+    } catch (err) {
+      console.error('lists-sync via whatsapp webhook error:', err)
+      return NextResponse.json({ ok: false, error: 'Sync failed' }, { status: 500 })
+    }
+  }
+
   const challenge = await verifyWebhook(req.nextUrl.searchParams)
   if (challenge) {
     return new NextResponse(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } })
